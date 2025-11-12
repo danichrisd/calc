@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -122,24 +123,26 @@ fun CalculatorScreen(
 			}
 		}
 
-		if (isScientific) {
-			ScientificCalculatorLayout(
-				onPress = vm::onKey,
-				onToggleScientific = { isScientific = false },
-				controlPadding = controlPadding,
-				dividerPadding = dividerPadding,
-				gridSpacing = gridSpacing,
-				gridPadding = gridPadding
-			)
-		} else {
-			StandardPad(
-				onPress = vm::onKey,
-				onToggleScientific = { isScientific = true },
-				controlPadding = controlPadding,
-				dividerPadding = dividerPadding,
-				gridSpacing = gridSpacing,
-				gridPadding = gridPadding
-			)
+		Box(modifier = Modifier.weight(1f)) {
+			if (isScientific) {
+				ScientificCalculatorLayout(
+					onPress = vm::onKey,
+					onToggleScientific = { isScientific = false },
+					controlPadding = controlPadding,
+					dividerPadding = dividerPadding,
+					gridSpacing = gridSpacing,
+					gridPadding = gridPadding
+				)
+			} else {
+				StandardPad(
+					onPress = vm::onKey,
+					onToggleScientific = { isScientific = true },
+					controlPadding = controlPadding,
+					dividerPadding = dividerPadding,
+					gridSpacing = gridSpacing,
+					gridPadding = gridPadding
+				)
+			}
 		}
 	}
 }

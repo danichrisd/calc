@@ -31,9 +31,9 @@ fun CalculatorButton(
 		capsule && isSmallScreen -> 1.2f  // More compact on small screens
 		capsule && isLargeScreen -> 2.0f  // Less wide on large screens for scientific functions
 		capsule -> 1.5f  // More compact default capsule ratio for scientific functions
-		isSmallScreen -> 0.8f  // More compact on small screens for standard buttons
-		isLargeScreen -> 1.0f  // Square on large screens for standard buttons
-		else -> 0.9f  // More compact default for standard buttons
+		isSmallScreen -> 1.4f  // Make buttons shorter to guarantee fit
+		isLargeScreen -> 1.3f  // Make buttons shorter
+		else -> 1.35f  // Make buttons shorter
 	}
 
 	// Responsive typography
