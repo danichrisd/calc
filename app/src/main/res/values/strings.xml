@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="app_name">Calc</string>
+
+	<!-- Top level -->
+	<string name="title_calculator">Calculator</string>
+	<string name="tab_standard">Standard</string>
+	<string name="tab_scientific">Scientific</string>
+	<string name="tab_converter">Converter</string>
+	<string name="label_coming_soon">Coming soon</string>
+
+	<!-- Display labels -->
+	<string name="label_expression">Expression</string>
+	<string name="label_result">Result</string>
+
+	<!-- Standard keys -->
+	<string name="key_ac">AC</string>
+	<string name="key_c">C</string>
+	<string name="key_parentheses">()</string>
+	<string name="key_percent">%</string>
+	<string name="key_divide">÷</string>
+	<string name="key_multiply">×</string>
+	<string name="key_minus">−</string>
+	<string name="key_plus">+</string>
+	<string name="key_equals">=</string>
+	<string name="key_dot">.</string>
+	<string name="key_sign">±</string>
+
+	<!-- Scientific keys -->
+	<string name="key_pi">π</string>
+	<string name="key_sqrt">√</string>
+	<string name="key_pow">^</string>
+	<string name="key_exp">eˣ</string>
+	<string name="key_log">log</string>
+	<string name="key_ln">ln</string>
+	<string name="key_sin">sin</string>
+	<string name="key_cos">cos</string>
+	<string name="key_tan">tan</string>
+	<string name="key_asin">asin</string>
+	<string name="key_acos">acos</string>
+	<string name="key_atan">atan</string>
+	<string name="key_fact">!</string>
+	<string name="key_lparen">(</string>
+	<string name="key_rparen">)</string>
+	<string name="key_deg">DEG</string>
+	<string name="key_rad">RAD</string>
+</resources>
