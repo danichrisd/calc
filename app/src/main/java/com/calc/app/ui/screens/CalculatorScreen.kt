@@ -30,6 +30,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -44,6 +45,45 @@ import com.calc.app.viewmodel.CalculatorViewModel.CalculatorKey
 fun CalculatorScreen(
 	vm: CalculatorViewModel = viewModel()
 ) {
+	val configuration = LocalConfiguration.current
+	val screenWidthDp = configuration.screenWidthDp
+	val screenHeightDp = configuration.screenHeightDp
+
+	// Determine responsive sizing
+	val isSmallScreen = screenWidthDp < 360 || screenHeightDp < 640
+	val isLargeScreen = screenWidthDp >= 600
+
+	// Responsive spacing and padding
+	val displayPadding = when {
+		isSmallScreen -> PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+		isLargeScreen -> PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+		else -> PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+	}
+
+	val controlPadding = when {
+		isSmallScreen -> Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+		isLargeScreen -> Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
+		else -> Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+	}
+
+	val dividerPadding = when {
+		isSmallScreen -> Modifier.padding(horizontal = 8.dp)
+		isLargeScreen -> Modifier.padding(horizontal = 16.dp)
+		else -> Modifier.padding(horizontal = 12.dp)
+	}
+
+	val gridSpacing = when {
+		isSmallScreen -> 4.dp
+		isLargeScreen -> 8.dp
+		else -> 6.dp
+	}
+
+	val gridPadding = when {
+		isSmallScreen -> PaddingValues(6.dp)
+		isLargeScreen -> PaddingValues(12.dp)
+		else -> PaddingValues(8.dp)
+	}
+
 	val uiState by vm.uiState.collectAsState()
 	var isScientific by remember { mutableStateOf(false) }
 
@@ -53,23 +93,31 @@ fun CalculatorScreen(
 			shadowElevation = 2.dp,
 			modifier = Modifier
 				.fillMaxWidth()
-				.padding(horizontal = 16.dp, vertical = 12.dp)
+				.then(displayPadding.let { Modifier.padding(it) })
 		) {
-			Column(modifier = Modifier.padding(16.dp)) {
+			Column(modifier = Modifier.padding(12.dp)) {
 				Text(
 					text = uiState.expression,
-					style = MaterialTheme.typography.headlineSmall,
+					style = when {
+						isSmallScreen -> MaterialTheme.typography.titleMedium
+						isLargeScreen -> MaterialTheme.typography.headlineMedium
+						else -> MaterialTheme.typography.headlineSmall
+					},
 					textAlign = TextAlign.End,
 					modifier = Modifier.fillMaxWidth()
 				)
 				Text(
 					text = uiState.result,
-					style = MaterialTheme.typography.headlineMedium,
+					style = when {
+						isSmallScreen -> MaterialTheme.typography.headlineSmall
+						isLargeScreen -> MaterialTheme.typography.displayMedium
+						else -> MaterialTheme.typography.headlineMedium
+					},
 					textAlign = TextAlign.End,
 					color = MaterialTheme.colorScheme.primary,
 					modifier = Modifier
 						.fillMaxWidth()
-						.padding(top = 8.dp)
+						.padding(top = if (isSmallScreen) 2.dp else 4.dp)
 				)
 			}
 		}
@@ -77,19 +125,34 @@ fun CalculatorScreen(
 		if (isScientific) {
 			ScientificCalculatorLayout(
 				onPress = vm::onKey,
-				onToggleScientific = { isScientific = false }
+				onToggleScientific = { isScientific = false },
+				controlPadding = controlPadding,
+				dividerPadding = dividerPadding,
+				gridSpacing = gridSpacing,
+				gridPadding = gridPadding
 			)
 		} else {
 			StandardPad(
 				onPress = vm::onKey,
-				onToggleScientific = { isScientific = true }
+				onToggleScientific = { isScientific = true },
+				controlPadding = controlPadding,
+				dividerPadding = dividerPadding,
+				gridSpacing = gridSpacing,
+				gridPadding = gridPadding
 			)
 		}
 	}
 }
 
 @Composable
-private fun StandardPad(onPress: (CalculatorKey) -> Unit, onToggleScientific: () -> Unit) {
+private fun StandardPad(
+	onPress: (CalculatorKey) -> Unit,
+	onToggleScientific: () -> Unit,
+	controlPadding: Modifier,
+	dividerPadding: Modifier,
+	gridSpacing: androidx.compose.ui.unit.Dp,
+	gridPadding: PaddingValues
+) {
 	val items = listOf(
 		CalculatorKey.AC to R.string.key_ac,
 		CalculatorKey.Parentheses to R.string.key_parentheses,
@@ -122,7 +185,7 @@ private fun StandardPad(onPress: (CalculatorKey) -> Unit, onToggleScientific: ()
 		Row(
 			modifier = Modifier
 				.fillMaxWidth()
-				.padding(horizontal = 16.dp, vertical = 8.dp),
+				.then(controlPadding),
 			horizontalArrangement = Arrangement.SpaceBetween,
 			verticalAlignment = Alignment.CenterVertically
 		) {
@@ -153,17 +216,19 @@ private fun StandardPad(onPress: (CalculatorKey) -> Unit, onToggleScientific: ()
 
 		// Horizontal divider
 		HorizontalDivider(
-			modifier = Modifier.padding(horizontal = 16.dp),
+			modifier = dividerPadding,
 			color = MaterialTheme.colorScheme.outlineVariant
 		)
 
 		// Calculator buttons grid
 		LazyVerticalGrid(
 			columns = GridCells.Fixed(4),
-			contentPadding = PaddingValues(12.dp),
-			horizontalArrangement = Arrangement.spacedBy(8.dp),
-			verticalArrangement = Arrangement.spacedBy(8.dp),
-			modifier = Modifier.fillMaxSize()
+			contentPadding = gridPadding,
+			horizontalArrangement = Arrangement.spacedBy(gridSpacing),
+			verticalArrangement = Arrangement.spacedBy(gridSpacing),
+			modifier = Modifier
+				.fillMaxWidth()
+				.weight(1f)
 		) {
 			items(items) { (key, labelId) ->
 				val label = labelId?.let { stringResource(id = it) } ?: key.display
@@ -185,7 +250,14 @@ private fun StandardPad(onPress: (CalculatorKey) -> Unit, onToggleScientific: ()
 }
 
 @Composable
-private fun ScientificCalculatorLayout(onPress: (CalculatorKey) -> Unit, onToggleScientific: () -> Unit) {
+private fun ScientificCalculatorLayout(
+	onPress: (CalculatorKey) -> Unit,
+	onToggleScientific: () -> Unit,
+	controlPadding: Modifier,
+	dividerPadding: Modifier,
+	gridSpacing: androidx.compose.ui.unit.Dp,
+	gridPadding: PaddingValues
+) {
 	// Scientific operators in 4x4 grid
 	val scientificOperators = listOf(
 		CalculatorKey.DegRadToggle to null,
@@ -214,7 +286,7 @@ private fun ScientificCalculatorLayout(onPress: (CalculatorKey) -> Unit, onToggl
 		Row(
 			modifier = Modifier
 				.fillMaxWidth()
-				.padding(horizontal = 16.dp, vertical = 8.dp),
+				.then(controlPadding),
 			horizontalArrangement = Arrangement.SpaceBetween,
 			verticalAlignment = Alignment.CenterVertically
 		) {
@@ -246,12 +318,12 @@ private fun ScientificCalculatorLayout(onPress: (CalculatorKey) -> Unit, onToggl
 		// Scientific operators in 4x4 grid
 		LazyVerticalGrid(
 			columns = GridCells.Fixed(4),
-			contentPadding = PaddingValues(12.dp),
-			horizontalArrangement = Arrangement.spacedBy(4.dp),
-			verticalArrangement = Arrangement.spacedBy(4.dp),
+			contentPadding = gridPadding,
+			horizontalArrangement = Arrangement.spacedBy(gridSpacing),
+			verticalArrangement = Arrangement.spacedBy(gridSpacing),
 			modifier = Modifier
 				.fillMaxWidth()
-				.height(200.dp) // Fixed height for 4 rows
+				.weight(4f)
 		) {
 			items(scientificOperators) { (key, labelId) ->
 				if (key != null) {
@@ -260,13 +332,12 @@ private fun ScientificCalculatorLayout(onPress: (CalculatorKey) -> Unit, onToggl
 						label = label,
 						onClick = { onPress(key) },
 						tonal = true,
-						capsule = true,
-						modifier = Modifier.aspectRatio(1.2f) // Slightly wider for smaller buttons
+						capsule = true
 					)
 				} else {
 					// Empty space
 					androidx.compose.foundation.layout.Spacer(
-						modifier = Modifier.aspectRatio(1.2f)
+						modifier = Modifier
 					)
 				}
 			}
@@ -274,7 +345,7 @@ private fun ScientificCalculatorLayout(onPress: (CalculatorKey) -> Unit, onToggl
 
 		// Horizontal divider
 		HorizontalDivider(
-			modifier = Modifier.padding(horizontal = 16.dp),
+			modifier = dividerPadding,
 			color = MaterialTheme.colorScheme.outlineVariant
 		)
 
@@ -308,10 +379,12 @@ private fun ScientificCalculatorLayout(onPress: (CalculatorKey) -> Unit, onToggl
 
 		LazyVerticalGrid(
 			columns = GridCells.Fixed(4),
-			contentPadding = PaddingValues(12.dp),
-			horizontalArrangement = Arrangement.spacedBy(4.dp),
-			verticalArrangement = Arrangement.spacedBy(4.dp),
-			modifier = Modifier.fillMaxSize()
+			contentPadding = gridPadding,
+			horizontalArrangement = Arrangement.spacedBy(gridSpacing),
+			verticalArrangement = Arrangement.spacedBy(gridSpacing),
+			modifier = Modifier
+				.fillMaxWidth()
+				.weight(5f)
 		) {
 			items(stdItems) { (key, labelId) ->
 				val label = labelId?.let { stringResource(id = it) } ?: key.display
@@ -331,5 +404,3 @@ private fun ScientificCalculatorLayout(onPress: (CalculatorKey) -> Unit, onToggl
 		}
 	}
 }
-
-

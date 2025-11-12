@@ -1,7 +1,9 @@
 package com.calc.app.ui.screens
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
@@ -33,7 +35,7 @@ fun RootScreen() {
 		TabPage.Converter to stringResource(id = R.string.tab_converter),
 	)
 
-	Column {
+	Column(modifier = Modifier.fillMaxSize()) {
 		TabRow(
 			selectedTabIndex = tabs.indexOfFirst { it.first == selectedTab },
 			containerColor = MaterialTheme.colorScheme.surface
@@ -47,9 +49,11 @@ fun RootScreen() {
 			}
 		}
 
-		when (selectedTab) {
-			TabPage.Standard -> CalculatorScreen()
-			TabPage.Converter -> ConverterScreen()
+		Box(modifier = Modifier.weight(1f)) {
+			when (selectedTab) {
+				TabPage.Standard -> CalculatorScreen()
+				TabPage.Converter -> ConverterScreen()
+			}
 		}
 	}
 }

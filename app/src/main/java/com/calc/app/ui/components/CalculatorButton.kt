@@ -8,6 +8,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 
 @Composable
 fun CalculatorButton(
@@ -17,6 +18,34 @@ fun CalculatorButton(
 	modifier: Modifier = Modifier,
 	capsule: Boolean = false
 ) {
+	val configuration = LocalConfiguration.current
+	val screenWidthDp = configuration.screenWidthDp
+	val screenHeightDp = configuration.screenHeightDp
+
+	// Determine responsive sizing based on screen dimensions
+	val isSmallScreen = screenWidthDp < 360 || screenHeightDp < 640
+	val isLargeScreen = screenWidthDp >= 600
+
+	// Responsive aspect ratios
+	val aspectRatio = when {
+		capsule && isSmallScreen -> 1.2f  // More compact on small screens
+		capsule && isLargeScreen -> 2.0f  // Less wide on large screens for scientific functions
+		capsule -> 1.5f  // More compact default capsule ratio for scientific functions
+		isSmallScreen -> 0.8f  // More compact on small screens for standard buttons
+		isLargeScreen -> 1.0f  // Square on large screens for standard buttons
+		else -> 0.9f  // More compact default for standard buttons
+	}
+
+	// Responsive typography
+	val textStyle = when {
+		capsule && isSmallScreen -> MaterialTheme.typography.titleSmall
+		capsule && isLargeScreen -> MaterialTheme.typography.titleLarge
+		capsule -> MaterialTheme.typography.titleMedium
+		isSmallScreen -> MaterialTheme.typography.headlineSmall
+		isLargeScreen -> MaterialTheme.typography.displaySmall
+		else -> MaterialTheme.typography.headlineMedium
+	}
+
 	val colors = if (tonal) {
 		ButtonDefaults.filledTonalButtonColors()
 	} else {
@@ -35,11 +64,11 @@ fun CalculatorButton(
 		shape = shape,
 		modifier = modifier
 			.fillMaxWidth()
-			.aspectRatio(if (capsule) 2f else 1f) // Wider for capsule
+			.aspectRatio(aspectRatio)
 	) {
 		Text(
 			text = label,
-			style = if (capsule) MaterialTheme.typography.titleMedium else MaterialTheme.typography.headlineMedium
+			style = textStyle
 		)
 	}
 }
