@@ -6,6 +6,7 @@ import com.calc.app.data.CalculationType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import java.text.DecimalFormat
 import kotlin.math.absoluteValue
 
 class ConverterViewModel : ViewModel() {
@@ -69,89 +70,22 @@ class ConverterViewModel : ViewModel() {
 
     private fun convert() {
         _uiState.update {
-            // Remove dots (thousand separators) and replace comma with dot for parsing
-            val cleanedValue = it.fromValue.replace(".", "").replace(",", ".")
+            val cleanedValue = it.fromValue.replace(",", "").replace(".", ".")
             val fromValueDouble = cleanedValue.toDoubleOrNull() ?: return@update it.copy(toValue = "")
             val result = it.category.convert(fromValueDouble, it.fromUnit, it.toUnit)
-            
-            // Format the result for better display
+
             val formattedResult = when {
                 result.isNaN() || result.isInfinite() -> "Error"
-                result == 0.0 -> "0"
-                result.absoluteValue >= 1e9 -> {
-                    // Use scientific notation for very large numbers (>= 1 billion)
-                    formatScientific(result)
-                }
-                result.absoluteValue < 0.000001 && result != 0.0 -> {
-                    // Use scientific notation for very small numbers
-                    formatScientific(result)
-                }
-                else -> {
-                    // Regular formatting with thousand separators and decimal comma
-                    formatRegularNumber(result)
-                }
+                else -> formatNumber(result)
             }
-            
+
             it.copy(toValue = formattedResult)
         }
     }
-    
-    private fun formatRegularNumber(number: Double): String {
-        // Format with up to 10 decimal places, then trim trailing zeros
-        val formatted = String.format("%.10f", number).trimEnd('0').trimEnd('.')
-        
-        // Handle negative sign
-        val isNegative = number < 0
-        val absoluteFormatted = if (isNegative) formatted.substring(1) else formatted
-        
-        // Split into integer and decimal parts
-        val parts = absoluteFormatted.split(".")
-        val integerPart = parts[0]
-        val decimalPart = if (parts.size > 1) parts[1] else ""
-        
-        // Add thousand separators to integer part
-        val formattedInteger = integerPart.reversed().chunked(3).joinToString(".").reversed()
-        
-        // Add negative sign back if needed
-        val signedInteger = if (isNegative) "-$formattedInteger" else formattedInteger
-        
-        // Combine with decimal part using comma as decimal separator
-        return if (decimalPart.isNotEmpty()) {
-            "$signedInteger,$decimalPart"
-        } else {
-            signedInteger
-        }
-    }
-    
-    private fun formatScientific(number: Double): String {
-        // Format in scientific notation: 1,23 × 10⁹
-        val scientificStr = String.format("%.6e", number)
-        val parts = scientificStr.split("e")
-        
-        if (parts.size != 2) return scientificStr
-        
-        val mantissa = parts[0].replace(".", ",") // Use comma as decimal separator
-        val exponent = parts[1].toIntOrNull() ?: return scientificStr
-        
-        // Convert exponent to superscript
-        val superscriptExponent = exponent.toString().map { char ->
-            when (char) {
-                '-' -> '⁻'
-                '0' -> '⁰'
-                '1' -> '¹'
-                '2' -> '²'
-                '3' -> '³'
-                '4' -> '⁴'
-                '5' -> '⁵'
-                '6' -> '⁶'
-                '7' -> '⁷'
-                '8' -> '⁸'
-                '9' -> '⁹'
-                else -> char
-            }
-        }.joinToString("")
-        
-        return "$mantissa × 10$superscriptExponent"
+
+    private fun formatNumber(number: Double): String {
+        val formatter = DecimalFormat("#,###.##########")
+        return formatter.format(number)
     }
 }
 
@@ -184,7 +118,6 @@ sealed class ConversionCategory(val name: String, val units: List<ConversionUnit
             val fromUnit = from as AreaUnit
             val toUnit = to as AreaUnit
 
-            // Convert to square meters first, then to target unit
             val squareMeters = value * fromUnit.toSquareMeters
             return squareMeters / toUnit.toSquareMeters
         }
@@ -195,7 +128,6 @@ sealed class ConversionCategory(val name: String, val units: List<ConversionUnit
             val fromUnit = from as LengthUnit
             val toUnit = to as LengthUnit
 
-            // Convert to meters first, then to target unit
             val meters = value * fromUnit.toMeters
             return meters / toUnit.toMeters
         }
@@ -206,7 +138,6 @@ sealed class ConversionCategory(val name: String, val units: List<ConversionUnit
             val fromUnit = from as TemperatureUnit
             val toUnit = to as TemperatureUnit
 
-            // Convert to Celsius first, then to target unit
             val celsius = when (fromUnit) {
                 TemperatureUnit.Celsius -> value
                 TemperatureUnit.Fahrenheit -> (value - 32) * 5/9
@@ -226,7 +157,6 @@ sealed class ConversionCategory(val name: String, val units: List<ConversionUnit
             val fromUnit = from as VolumeUnit
             val toUnit = to as VolumeUnit
 
-            // Convert to liters first, then to target unit
             val liters = value * fromUnit.toLiters
             return liters / toUnit.toLiters
         }
@@ -237,7 +167,6 @@ sealed class ConversionCategory(val name: String, val units: List<ConversionUnit
             val fromUnit = from as MassUnit
             val toUnit = to as MassUnit
 
-            // Convert to grams first, then to target unit
             val grams = value * fromUnit.toGrams
             return grams / toUnit.toGrams
         }
@@ -248,7 +177,6 @@ sealed class ConversionCategory(val name: String, val units: List<ConversionUnit
             val fromUnit = from as DataUnit
             val toUnit = to as DataUnit
 
-            // Convert to bytes first, then to target unit
             val bytes = value * fromUnit.toBytes
             return bytes / toUnit.toBytes
         }
@@ -259,7 +187,6 @@ sealed class ConversionCategory(val name: String, val units: List<ConversionUnit
             val fromUnit = from as SpeedUnit
             val toUnit = to as SpeedUnit
 
-            // Convert to m/s first, then to target unit
             val metersPerSecond = value * fromUnit.toMetersPerSecond
             return metersPerSecond / toUnit.toMetersPerSecond
         }
@@ -270,7 +197,6 @@ sealed class ConversionCategory(val name: String, val units: List<ConversionUnit
             val fromUnit = from as TimeUnit
             val toUnit = to as TimeUnit
 
-            // Convert to seconds first, then to target unit
             val seconds = value * fromUnit.toSeconds
             return seconds / toUnit.toSeconds
         }
@@ -278,7 +204,6 @@ sealed class ConversionCategory(val name: String, val units: List<ConversionUnit
 
     object Discount : ConversionCategory("Discount", DiscountUnit.values().toList()) {
         override fun convert(value: Double, from: ConversionUnit, to: ConversionUnit): Double {
-            // Discount calculation is a bit different - it's percentage based
             val percentage = when (from) {
                 is DiscountUnit -> from.percentage
                 else -> 0.0
@@ -289,7 +214,6 @@ sealed class ConversionCategory(val name: String, val units: List<ConversionUnit
 
     object Tip : ConversionCategory("Tip", TipUnit.values().toList()) {
         override fun convert(value: Double, from: ConversionUnit, to: ConversionUnit): Double {
-            // Tip calculation is a bit different - it's percentage based
             val percentage = when (from) {
                 is TipUnit -> from.percentage
                 else -> 0.0

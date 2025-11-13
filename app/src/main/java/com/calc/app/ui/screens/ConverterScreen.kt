@@ -12,9 +12,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -204,7 +201,8 @@ fun ConverterScreen(
                     units = uiState.category.units,
                     onUnitSelected = { vm.onAction(ConverterAction.ToUnitChange(it)) },
                     valueReadOnly = true,
-                    unitReadOnly = false
+                    unitReadOnly = false,
+                    trailingIcon = { Text(uiState.toUnit.symbol) }
                 )
 
                 Spacer(modifier = Modifier.weight(1f))
@@ -274,7 +272,8 @@ fun UnitRow(
     units: List<ConversionUnit>,
     onUnitSelected: (ConversionUnit) -> Unit,
     valueReadOnly: Boolean = false,
-    unitReadOnly: Boolean = false
+    unitReadOnly: Boolean = false,
+    trailingIcon: @Composable (() -> Unit)? = null
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -285,7 +284,8 @@ fun UnitRow(
             onValueChange = onValueChange,
             modifier = Modifier.weight(1f),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            readOnly = valueReadOnly
+            readOnly = valueReadOnly,
+            trailingIcon = trailingIcon
         )
         UnitDropdown(
             selectedUnit = selectedUnit,
