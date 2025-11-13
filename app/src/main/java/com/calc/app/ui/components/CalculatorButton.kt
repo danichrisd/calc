@@ -28,9 +28,9 @@ fun CalculatorButton(
 
 	// Responsive aspect ratios
 	val aspectRatio = when {
-		capsule && isSmallScreen -> 1.8f  // More compact on small screens
+		capsule && isSmallScreen -> 2.2f  // More compact on small screens
 		capsule && isLargeScreen -> 2.5f  // Less wide on large screens for scientific functions
-		capsule -> 2.0f  // More compact default capsule ratio for scientific functions
+		capsule -> 2.4f  // More compact default capsule ratio for scientific functions
 		isSmallScreen -> 1.6f  // Make buttons shorter to guarantee fit
 		isLargeScreen -> 1.4f  // Make buttons shorter
 		else -> 1.5f  // Make buttons shorter

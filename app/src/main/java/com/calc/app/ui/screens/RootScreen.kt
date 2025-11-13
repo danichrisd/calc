@@ -24,38 +24,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.calc.app.R
 
-enum class TabPage { Standard, Converter }
-
 @Composable
 fun RootScreen() {
-	var selectedTab by remember { mutableStateOf(TabPage.Standard) }
-
-	val tabs = listOf(
-		TabPage.Standard to stringResource(id = R.string.tab_standard),
-		TabPage.Converter to stringResource(id = R.string.tab_converter),
-	)
-
-	Column(modifier = Modifier.fillMaxSize()) {
-		TabRow(
-			selectedTabIndex = tabs.indexOfFirst { it.first == selectedTab },
-			containerColor = MaterialTheme.colorScheme.surface
-		) {
-			tabs.forEachIndexed { _, item ->
-				Tab(
-					selected = selectedTab == item.first,
-					onClick = { selectedTab = item.first },
-					text = { Text(text = item.second) }
-				)
-			}
-		}
-
-		Box(modifier = Modifier.weight(1f)) {
-			when (selectedTab) {
-				TabPage.Standard -> CalculatorScreen()
-				TabPage.Converter -> ConverterScreen()
-			}
-		}
-	}
+	CalculatorScreen()
 }
 
 

@@ -41,6 +41,7 @@ import com.calc.app.R
 import com.calc.app.ui.components.CalculatorButton
 import com.calc.app.viewmodel.CalculatorViewModel
 import com.calc.app.viewmodel.CalculatorViewModel.CalculatorKey
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 
 @Composable
 fun CalculatorScreen(
@@ -74,9 +75,9 @@ fun CalculatorScreen(
 	}
 
 	val gridSpacing = when {
-		isSmallScreen -> 2.dp
-		isLargeScreen -> 6.dp
-		else -> 4.dp
+		isSmallScreen -> 4.dp
+		isLargeScreen -> 10.dp
+		else -> 8.dp
 	}
 
 	val gridPadding = when {
@@ -87,6 +88,7 @@ fun CalculatorScreen(
 
 	val uiState by vm.uiState.collectAsState()
 	var isScientific by remember { mutableStateOf(false) }
+	var showConverter by remember { mutableStateOf(false) }
 
 	Column(modifier = Modifier.fillMaxSize()) {
 		Surface(
@@ -124,10 +126,13 @@ fun CalculatorScreen(
 		}
 
 		Box(modifier = Modifier.weight(1f)) {
-			if (isScientific) {
+			if (showConverter) {
+				ConverterScreen()
+			} else if (isScientific) {
 				ScientificCalculatorLayout(
 					onPress = vm::onKey,
 					onToggleScientific = { isScientific = false },
+					onToggleConverter = { showConverter = true },
 					controlPadding = controlPadding,
 					dividerPadding = dividerPadding,
 					gridSpacing = gridSpacing,
@@ -137,6 +142,7 @@ fun CalculatorScreen(
 				StandardPad(
 					onPress = vm::onKey,
 					onToggleScientific = { isScientific = true },
+					onToggleConverter = { showConverter = true },
 					controlPadding = controlPadding,
 					dividerPadding = dividerPadding,
 					gridSpacing = gridSpacing,
@@ -151,6 +157,7 @@ fun CalculatorScreen(
 private fun StandardPad(
 	onPress: (CalculatorKey) -> Unit,
 	onToggleScientific: () -> Unit,
+	onToggleConverter: () -> Unit,
 	controlPadding: Modifier,
 	dividerPadding: Modifier,
 	gridSpacing: androidx.compose.ui.unit.Dp,
@@ -192,16 +199,27 @@ private fun StandardPad(
 			horizontalArrangement = Arrangement.SpaceBetween,
 			verticalAlignment = Alignment.CenterVertically
 		) {
-			// Scientific toggle icon (left)
-			IconButton(
-				onClick = onToggleScientific,
-				modifier = Modifier.padding(8.dp)
-			) {
-				Icon(
-					painter = painterResource(id = android.R.drawable.ic_menu_more),
-					contentDescription = stringResource(R.string.tab_scientific),
-					tint = MaterialTheme.colorScheme.primary
-				)
+			Row(verticalAlignment = Alignment.CenterVertically) {
+				IconButton(
+					onClick = onToggleScientific,
+					modifier = Modifier.padding(8.dp)
+				) {
+					Icon(
+						painter = painterResource(id = R.drawable.ic_calc),
+						contentDescription = stringResource(R.string.tab_scientific),
+						tint = MaterialTheme.colorScheme.primary
+					)
+				}
+				IconButton(
+					onClick = onToggleConverter,
+					modifier = Modifier.padding(8.dp)
+				) {
+					Icon(
+						painter = painterResource(id = android.R.drawable.ic_menu_sort_by_size),
+						contentDescription = stringResource(R.string.tab_converter),
+						tint = MaterialTheme.colorScheme.primary
+					)
+				}
 			}
 
 			// Backspace icon (right)
@@ -256,60 +274,112 @@ private fun StandardPad(
 private fun ScientificCalculatorLayout(
 	onPress: (CalculatorKey) -> Unit,
 	onToggleScientific: () -> Unit,
+	onToggleConverter: () -> Unit,
 	controlPadding: Modifier,
 	dividerPadding: Modifier,
 	gridSpacing: androidx.compose.ui.unit.Dp,
 	gridPadding: PaddingValues
 ) {
 	var scientificPage by remember { mutableStateOf(0) }
-	// Scientific operators in 4x4 grid
-	val scientificOperatorsPage1 = listOf(
-        CalculatorKey.ScientificToggle to null,
-        CalculatorKey.DegRadToggle to null,
-        CalculatorKey.CubeRoot to R.string.key_cubert,
-        CalculatorKey.TwoPowX to R.string.key_2_power_x,
-
-        CalculatorKey.Asin to R.string.key_asin,
-        CalculatorKey.Acos to R.string.key_acos,
-        CalculatorKey.Atan to R.string.key_atan,
-        CalculatorKey.Cube to R.string.key_x_cubed,
-
-        CalculatorKey.Sinh to R.string.key_sinh,
-        CalculatorKey.Cosh to R.string.key_cosh,
-        CalculatorKey.Tanh to R.string.key_tanh,
-        CalculatorKey.Fact to R.string.key_fact,
-
-        CalculatorKey.Asinh to R.string.key_asinh,
-        CalculatorKey.Acosh to R.string.key_acosh,
-        CalculatorKey.Atanh to R.string.key_atanh,
-        null to null,
+	// Reorganized for a uniform 4-column layout
+	val scientificKeysPage1 = listOf(
+		// Row 1
+		CalculatorKey.ScientificToggle to null,
+		CalculatorKey.DegRadToggle to null,
+		CalculatorKey.Sqrt to R.string.key_sqrt,
+		CalculatorKey.Abs to R.string.key_abs,
+		// Row 2
+		CalculatorKey.Sin to R.string.key_sin,
+		CalculatorKey.Cos to R.string.key_cos,
+		CalculatorKey.Tan to R.string.key_tan,
+		CalculatorKey.Pi to R.string.key_pi,
+		// Row 3
+		CalculatorKey.Ln to R.string.key_ln,
+		CalculatorKey.Log to R.string.key_log,
+		CalculatorKey.Reciprocal to R.string.key_reciprocal,
+		CalculatorKey.Euler to R.string.key_e,
+		// Row 4
+		CalculatorKey.Exp to R.string.key_exp,
+		CalculatorKey.Square to R.string.key_x_squared,
+		CalculatorKey.Pow to R.string.key_pow,
+		CalculatorKey.Fact to R.string.key_fact,
+		// Row 5
+		CalculatorKey.AC to R.string.key_ac,
+		CalculatorKey.Parentheses to R.string.key_parentheses,
+		CalculatorKey.Percent to R.string.key_percent,
+		CalculatorKey.Divide to R.string.key_divide,
+		// Row 6
+		CalculatorKey.Digit7 to null,
+		CalculatorKey.Digit8 to null,
+		CalculatorKey.Digit9 to null,
+		CalculatorKey.Multiply to R.string.key_multiply,
+		// Row 7
+		CalculatorKey.Digit4 to null,
+		CalculatorKey.Digit5 to null,
+		CalculatorKey.Digit6 to null,
+		CalculatorKey.Minus to R.string.key_minus,
+		// Row 8
+		CalculatorKey.Digit1 to null,
+		CalculatorKey.Digit2 to null,
+		CalculatorKey.Digit3 to null,
+		CalculatorKey.Plus to R.string.key_plus,
+		// Row 9
+		CalculatorKey.Sign to R.string.key_sign,
+		CalculatorKey.Digit0 to null,
+		CalculatorKey.Dot to R.string.key_dot,
+		CalculatorKey.Equals to R.string.key_equals,
 	)
-    val scientificOperatorsPage2 = listOf(
-        CalculatorKey.ScientificToggle to null,
-        CalculatorKey.DegRadToggle to null,
-        CalculatorKey.Sqrt to R.string.key_sqrt,
-        CalculatorKey.Abs to R.string.key_abs,
+	val scientificKeysPage2 = listOf(
+		// Row 1
+		CalculatorKey.ScientificToggle to null,
+		CalculatorKey.DegRadToggle to null,
+		CalculatorKey.CubeRoot to R.string.key_cubert,
+		CalculatorKey.TwoPowX to R.string.key_2_power_x,
+		// Row 2
+		CalculatorKey.Asin to R.string.key_asin,
+		CalculatorKey.Acos to R.string.key_acos,
+		CalculatorKey.Atan to R.string.key_atan,
+		CalculatorKey.Cube to R.string.key_x_cubed,
+		// Row 3
+		CalculatorKey.Sinh to R.string.key_sinh,
+		CalculatorKey.Cosh to R.string.key_cosh,
+		CalculatorKey.Tanh to R.string.key_tanh,
+		CalculatorKey.C to R.string.key_c, // Placeholder for future use
+		// Row 4
+		CalculatorKey.Asinh to R.string.key_asinh,
+		CalculatorKey.Acosh to R.string.key_acosh,
+		CalculatorKey.Atanh to R.string.key_atanh,
+		null to null, // Empty
+		// Row 5
+		CalculatorKey.AC to R.string.key_ac,
+		CalculatorKey.Parentheses to R.string.key_parentheses,
+		CalculatorKey.Percent to R.string.key_percent,
+		CalculatorKey.Divide to R.string.key_divide,
+		// Row 6
+		CalculatorKey.Digit7 to null,
+		CalculatorKey.Digit8 to null,
+		CalculatorKey.Digit9 to null,
+		CalculatorKey.Multiply to R.string.key_multiply,
+		// Row 7
+		CalculatorKey.Digit4 to null,
+		CalculatorKey.Digit5 to null,
+		CalculatorKey.Digit6 to null,
+		CalculatorKey.Minus to R.string.key_minus,
+		// Row 8
+		CalculatorKey.Digit1 to null,
+		CalculatorKey.Digit2 to null,
+		CalculatorKey.Digit3 to null,
+		CalculatorKey.Plus to R.string.key_plus,
+		// Row 9
+		CalculatorKey.Sign to R.string.key_sign,
+		CalculatorKey.Digit0 to null,
+		CalculatorKey.Dot to R.string.key_dot,
+		CalculatorKey.Equals to R.string.key_equals,
+	)
 
-        CalculatorKey.Sin to R.string.key_sin,
-        CalculatorKey.Cos to R.string.key_cos,
-        CalculatorKey.Tan to R.string.key_tan,
-        CalculatorKey.Pi to R.string.key_pi,
-
-        CalculatorKey.Ln to R.string.key_ln,
-        CalculatorKey.Log to R.string.key_log,
-        CalculatorKey.Reciprocal to R.string.key_reciprocal,
-        CalculatorKey.Euler to R.string.key_e,
-
-        CalculatorKey.Exp to R.string.key_exp,
-        CalculatorKey.Square to R.string.key_x_squared,
-        CalculatorKey.Pow to R.string.key_pow,
-        null to null,
-    )
-    val scientificOperators = if (scientificPage == 0) scientificOperatorsPage1 else scientificOperatorsPage2
-
+	val items = if (scientificPage == 0) scientificKeysPage1 else scientificKeysPage2
 
 	Column(modifier = Modifier.fillMaxSize()) {
-		// Control icons bar
 		Row(
 			modifier = Modifier
 				.fillMaxWidth()
@@ -317,19 +387,28 @@ private fun ScientificCalculatorLayout(
 			horizontalArrangement = Arrangement.SpaceBetween,
 			verticalAlignment = Alignment.CenterVertically
 		) {
-			// Back to standard calculator icon (left)
-			IconButton(
-				onClick = onToggleScientific,
-				modifier = Modifier.padding(8.dp)
-			) {
-				Icon(
-					painter = painterResource(id = android.R.drawable.ic_menu_revert),
-					contentDescription = "Back to standard calculator",
-					tint = MaterialTheme.colorScheme.primary
-				)
+			Row(verticalAlignment = Alignment.CenterVertically) {
+				IconButton(
+					onClick = onToggleScientific,
+					modifier = Modifier.padding(8.dp)
+				) {
+					Icon(
+						painter = painterResource(id = R.drawable.ic_calc),
+						contentDescription = "Back to standard calculator",
+						tint = MaterialTheme.colorScheme.primary
+					)
+				}
+				IconButton(
+					onClick = onToggleConverter,
+					modifier = Modifier.padding(8.dp)
+				) {
+					Icon(
+						painter = painterResource(id = android.R.drawable.ic_menu_sort_by_size),
+						contentDescription = stringResource(R.string.tab_converter),
+						tint = MaterialTheme.colorScheme.primary
+					)
+				}
 			}
-
-			// Backspace icon (right)
 			IconButton(
 				onClick = { onPress(CalculatorKey.C) },
 				modifier = Modifier.padding(8.dp)
@@ -342,72 +421,9 @@ private fun ScientificCalculatorLayout(
 			}
 		}
 
-		// Scientific operators in 4x4 grid
-		LazyVerticalGrid(
-			columns = GridCells.Fixed(4),
-			contentPadding = gridPadding,
-			horizontalArrangement = Arrangement.spacedBy(gridSpacing),
-			verticalArrangement = Arrangement.spacedBy(2.dp),
-			modifier = Modifier
-				.fillMaxWidth()
-				.weight(4f)
-		) {
-			items(scientificOperators) { (key, labelId) ->
-				if (key != null) {
-					val label = labelId?.let { stringResource(id = it) } ?: key.display
-					CalculatorButton(
-						label = label,
-						onClick = {
-                            if (key == CalculatorKey.ScientificToggle) {
-                                scientificPage = 1 - scientificPage
-                            } else {
-                                onPress(key)
-                            }
-                        },
-						tonal = true,
-						capsule = true
-					)
-				} else {
-					// Empty space
-					androidx.compose.foundation.layout.Spacer(
-						modifier = Modifier
-					)
-				}
-			}
-		}
-
-		// Horizontal divider
 		HorizontalDivider(
 			modifier = dividerPadding,
 			color = MaterialTheme.colorScheme.outlineVariant
-		)
-
-		// Main calculator buttons with capsule shape
-		val stdItems = listOf(
-			CalculatorKey.AC to R.string.key_ac,
-			CalculatorKey.Parentheses to R.string.key_parentheses,
-			CalculatorKey.Percent to R.string.key_percent,
-			CalculatorKey.Divide to R.string.key_divide,
-
-			CalculatorKey.Digit7 to null,
-			CalculatorKey.Digit8 to null,
-			CalculatorKey.Digit9 to null,
-			CalculatorKey.Multiply to R.string.key_multiply,
-
-			CalculatorKey.Digit4 to null,
-			CalculatorKey.Digit5 to null,
-			CalculatorKey.Digit6 to null,
-			CalculatorKey.Minus to R.string.key_minus,
-
-			CalculatorKey.Digit1 to null,
-			CalculatorKey.Digit2 to null,
-			CalculatorKey.Digit3 to null,
-			CalculatorKey.Plus to R.string.key_plus,
-
-			CalculatorKey.Sign to R.string.key_sign,
-			CalculatorKey.Digit0 to null,
-			CalculatorKey.Dot to R.string.key_dot,
-			CalculatorKey.Equals to R.string.key_equals,
 		)
 
 		LazyVerticalGrid(
@@ -417,22 +433,32 @@ private fun ScientificCalculatorLayout(
 			verticalArrangement = Arrangement.spacedBy(gridSpacing),
 			modifier = Modifier
 				.fillMaxWidth()
-				.weight(5f)
+				.weight(1f)
 		) {
-			items(stdItems) { (key, labelId) ->
-				val label = labelId?.let { stringResource(id = it) } ?: key.display
-				val isOp = key.isOperator
-				val tonal = when (key) {
-					CalculatorKey.AC, CalculatorKey.Parentheses, CalculatorKey.Percent -> false // Use filled style for these
-					CalculatorKey.Equals -> false // Same as AC
-					else -> !isOp
+			items(items) { (key, labelId) ->
+				if (key != null) {
+					val label = labelId?.let { stringResource(id = it) } ?: key.display
+					val tonal = when (key) {
+						CalculatorKey.AC, CalculatorKey.C, CalculatorKey.Parentheses, CalculatorKey.Percent -> false
+						CalculatorKey.Equals -> false
+						else -> !key.isOperator
+					}
+					CalculatorButton(
+						label = label,
+						onClick = {
+							if (key == CalculatorKey.ScientificToggle) {
+								scientificPage = 1 - scientificPage
+							} else {
+								onPress(key)
+							}
+						},
+						tonal = tonal,
+						capsule = true
+					)
+				} else {
+					// Empty space, if any
+					androidx.compose.foundation.layout.Spacer(modifier = Modifier)
 				}
-				CalculatorButton(
-					label = label,
-					onClick = { onPress(key) },
-					tonal = tonal,
-					capsule = true // All buttons are capsule shaped in scientific mode
-				)
 			}
 		}
 	}
