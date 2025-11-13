@@ -2,6 +2,8 @@ package com.calc.app.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.calc.app.data.CalculationHistory
+import com.calc.app.data.CalculationType
 import com.calc.app.math.ExpressionEvaluator
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -32,12 +34,13 @@ class CalculatorViewModel : ViewModel() {
 				.replace("tanh(", "tanh(")
 				.replace("asinh(", "sinh⁻¹(")
 				.replace("acosh(", "cosh⁻¹(")
-				.replace("atanh(", "atanh⁻¹(")
+				.replace("atanh(", "tanh⁻¹(")
 				.replace("ln(", "ln(")
 				.replace("log(", "log(")
 				.replace("exp(", "eˣ(")
 				.replace("abs(", "|(")
 				.replace("pi", "π")
+				.replace("e", "e")
 				.replace("^2", "²")
 				.replace("^3", "³")
 	}
@@ -197,10 +200,36 @@ class CalculatorViewModel : ViewModel() {
 		val expression = autoCloseParentheses(current.expression)
 		try {
 			val value = ExpressionEvaluator.evaluate(expression, current.isDegrees)
-			setState { copy(expression = value.formatAsDisplay(), result = "") }
+			val resultStr = value.formatAsDisplay()
+			
+			// Save to history
+			if (expression.isNotEmpty() && resultStr != "Error") {
+				val displayExpr = current.displayExpression
+				HistoryViewModel.getInstance().addHistory(
+					CalculationHistory(
+						type = if (isScientificExpression(expression)) 
+							CalculationType.SCIENTIFIC 
+						else 
+							CalculationType.BASIC,
+						expression = displayExpr,
+						result = resultStr
+					)
+				)
+			}
+			
+			setState { copy(expression = resultStr, result = "") }
 		} catch (_: Throwable) {
 			// ignore on equals if invalid
 		}
+	}
+	
+	private fun isScientificExpression(expr: String): Boolean {
+		val scientificFunctions = listOf(
+			"sin", "cos", "tan", "asin", "acos", "atan",
+			"sinh", "cosh", "tanh", "asinh", "acosh", "atanh",
+			"sqrt", "cbrt", "log", "ln", "exp", "abs", "pi", "^"
+		)
+		return scientificFunctions.any { expr.contains(it) }
 	}
 
 	private fun autoCloseParentheses(expr: String): String {
@@ -258,14 +287,14 @@ class CalculatorViewModel : ViewModel() {
 		Cos("cos", "cos("),
 		Tan("tan", "tan("),
 		Asin("sin⁻¹", "asin("),
-		Acos("cos⁻¹"),
-		Atan("tan⁻¹"),
-		Sinh("sinh"),
-		Cosh("cosh"),
-		Tanh("tanh"),
-		Asinh("sinh⁻¹"),
-		Acosh("cosh⁻¹"),
-		Atanh("tanh⁻¹"),
+		Acos("cos⁻¹", "acos("),
+		Atan("tan⁻¹", "atan("),
+		Sinh("sinh", "sinh("),
+		Cosh("cosh", "cosh("),
+		Tanh("tanh", "tanh("),
+		Asinh("sinh⁻¹", "asinh("),
+		Acosh("cosh⁻¹", "acosh("),
+		Atanh("tanh⁻¹", "atanh("),
 		CubeRoot("³√", "cbrt("),
 		Cube("x³", "^3"),
 		TwoPowX("2ˣ", "2^"),

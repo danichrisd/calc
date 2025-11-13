@@ -110,6 +110,15 @@ fun ConverterScreen(
 				valueReadOnly = true,
 				unitReadOnly = false
 			)
+			
+			// Save to History Button
+			Button(
+				onClick = { vm.saveToHistory() },
+				modifier = Modifier.fillMaxWidth(),
+				enabled = uiState.toValue.isNotEmpty() && uiState.toValue != "Error"
+			) {
+				Text("Simpan ke History")
+			}
 		}
 	}
 }

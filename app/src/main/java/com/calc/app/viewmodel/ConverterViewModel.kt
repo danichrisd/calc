@@ -1,6 +1,8 @@
 package com.calc.app.viewmodel
 
 import androidx.lifecycle.ViewModel
+import com.calc.app.data.CalculationHistory
+import com.calc.app.data.CalculationType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -10,6 +12,22 @@ class ConverterViewModel : ViewModel() {
 
     private val _uiState = MutableStateFlow(ConverterUiState())
     val uiState = _uiState.asStateFlow()
+    
+    fun saveToHistory() {
+        val state = _uiState.value
+        if (state.toValue.isNotEmpty() && state.toValue != "Error") {
+            val expression = "${state.fromValue} ${state.fromUnit.displayName} = "
+            val result = "${state.toValue} ${state.toUnit.displayName}"
+            
+            HistoryViewModel.getInstance().addHistory(
+                CalculationHistory(
+                    type = CalculationType.CONVERTER,
+                    expression = "${state.category.name}: $expression",
+                    result = result
+                )
+            )
+        }
+    }
 
     fun onAction(action: ConverterAction) {
         when (action) {
@@ -51,25 +69,89 @@ class ConverterViewModel : ViewModel() {
 
     private fun convert() {
         _uiState.update {
-            val fromValueDouble = it.fromValue.toDoubleOrNull() ?: return@update it.copy(toValue = "")
+            // Remove dots (thousand separators) and replace comma with dot for parsing
+            val cleanedValue = it.fromValue.replace(".", "").replace(",", ".")
+            val fromValueDouble = cleanedValue.toDoubleOrNull() ?: return@update it.copy(toValue = "")
             val result = it.category.convert(fromValueDouble, it.fromUnit, it.toUnit)
             
             // Format the result for better display
             val formattedResult = when {
                 result.isNaN() || result.isInfinite() -> "Error"
                 result == 0.0 -> "0"
-                result.absoluteValue >= 1_000_000 || result.absoluteValue < 0.0001 -> {
-                    // Use scientific notation for very large or very small numbers
-                    String.format("%.6e", result)
+                result.absoluteValue >= 1e9 -> {
+                    // Use scientific notation for very large numbers (>= 1 billion)
+                    formatScientific(result)
+                }
+                result.absoluteValue < 0.000001 && result != 0.0 -> {
+                    // Use scientific notation for very small numbers
+                    formatScientific(result)
                 }
                 else -> {
-                    // Regular formatting, remove trailing zeros
-                    String.format("%.10f", result).trimEnd('0').trimEnd('.')
+                    // Regular formatting with thousand separators and decimal comma
+                    formatRegularNumber(result)
                 }
             }
             
             it.copy(toValue = formattedResult)
         }
+    }
+    
+    private fun formatRegularNumber(number: Double): String {
+        // Format with up to 10 decimal places, then trim trailing zeros
+        val formatted = String.format("%.10f", number).trimEnd('0').trimEnd('.')
+        
+        // Handle negative sign
+        val isNegative = number < 0
+        val absoluteFormatted = if (isNegative) formatted.substring(1) else formatted
+        
+        // Split into integer and decimal parts
+        val parts = absoluteFormatted.split(".")
+        val integerPart = parts[0]
+        val decimalPart = if (parts.size > 1) parts[1] else ""
+        
+        // Add thousand separators to integer part
+        val formattedInteger = integerPart.reversed().chunked(3).joinToString(".").reversed()
+        
+        // Add negative sign back if needed
+        val signedInteger = if (isNegative) "-$formattedInteger" else formattedInteger
+        
+        // Combine with decimal part using comma as decimal separator
+        return if (decimalPart.isNotEmpty()) {
+            "$signedInteger,$decimalPart"
+        } else {
+            signedInteger
+        }
+    }
+    
+    private fun formatScientific(number: Double): String {
+        // Format in scientific notation: 1,23 × 10⁹
+        val scientificStr = String.format("%.6e", number)
+        val parts = scientificStr.split("e")
+        
+        if (parts.size != 2) return scientificStr
+        
+        val mantissa = parts[0].replace(".", ",") // Use comma as decimal separator
+        val exponent = parts[1].toIntOrNull() ?: return scientificStr
+        
+        // Convert exponent to superscript
+        val superscriptExponent = exponent.toString().map { char ->
+            when (char) {
+                '-' -> '⁻'
+                '0' -> '⁰'
+                '1' -> '¹'
+                '2' -> '²'
+                '3' -> '³'
+                '4' -> '⁴'
+                '5' -> '⁵'
+                '6' -> '⁶'
+                '7' -> '⁷'
+                '8' -> '⁸'
+                '9' -> '⁹'
+                else -> char
+            }
+        }.joinToString("")
+        
+        return "$mantissa × 10$superscriptExponent"
     }
 }
 

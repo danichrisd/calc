@@ -32,12 +32,19 @@ object ExpressionEvaluator {
 					i += 2
 					continue
 				}
+				c == 'e' && (i + 1 >= s.length || !s[i+1].isLetter()) -> {
+					// Handle 'e' as Euler's number if not followed by letters
+					out += Token.NumberToken(Math.E)
+					i++
+					continue
+				}
 				c.isLetter() -> {
 					var j = i + 1
 					while (j < s.length && s[j].isLetter()) j++
 					val name = s.substring(i, j)
 					out += when (name.lowercase()) {
-						"sin","cos","tan","asin","acos","atan","log","ln","sqrt","exp" -> Token.FunctionToken(name.lowercase())
+						"sin","cos","tan","asin","acos","atan","log","ln","sqrt","exp",
+						"cbrt","abs","sinh","cosh","tanh","asinh","acosh","atanh" -> Token.FunctionToken(name.lowercase())
 						else -> throw IllegalArgumentException("Unknown name: $name")
 					}
 					i = j
@@ -155,6 +162,8 @@ object ExpressionEvaluator {
 					val res = when (t.name) {
 						"neg" -> -stack.pop()
 						"sqrt" -> sqrt(stack.pop())
+						"cbrt" -> cbrt(stack.pop())
+						"abs" -> abs(stack.pop())
 						"ln" -> ln(stack.pop())
 						"log" -> log10(stack.pop())
 						"exp" -> exp(stack.pop())
@@ -164,6 +173,12 @@ object ExpressionEvaluator {
 						"asin" -> invTrig(::asin, stack.pop(), degrees)
 						"acos" -> invTrig(::acos, stack.pop(), degrees)
 						"atan" -> invTrig(::atan, stack.pop(), degrees)
+						"sinh" -> sinh(stack.pop())
+						"cosh" -> cosh(stack.pop())
+						"tanh" -> tanh(stack.pop())
+						"asinh" -> asinh(stack.pop())
+						"acosh" -> acosh(stack.pop())
+						"atanh" -> atanh(stack.pop())
 						else -> throw IllegalArgumentException("Unknown function ${t.name}")
 					}
 					stack.push(res)
