@@ -12,6 +12,9 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
@@ -23,6 +26,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -41,6 +47,7 @@ import com.calc.app.viewmodel.ConverterViewModel
 import com.calc.app.viewmodel.ConversionCategory
 import com.calc.app.viewmodel.ConversionUnit
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConverterScreen(
     onBack: () -> Unit,
@@ -78,132 +85,138 @@ fun ConverterScreen(
         return
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(4.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onBack) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back"
-                )
-            }
-            CategoryDropdown(
-                selectedCategory = uiState.category,
-                onCategorySelected = { vm.onAction(ConverterAction.CategoryChange(it)) }
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Unit Converter") },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                }
             )
         }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            CalculatorButton(
-                label = "History",
-                onClick = { showHistory = true },
-                tonal = true,
-                capsule = true,
-                fillMaxWidth = false,
-                modifier = Modifier.padding(4.dp)
-            )
-            CalculatorButton(
-                label = "Loan",
-                onClick = { showLoan = true },
-                tonal = true,
-                capsule = true,
-                fillMaxWidth = false,
-                modifier = Modifier.padding(4.dp)
-            )
-            CalculatorButton(
-                label = "EMI",
-                onClick = { showEMI = true },
-                tonal = true,
-                capsule = true,
-                fillMaxWidth = false,
-                modifier = Modifier.padding(4.dp)
-            )
-            CalculatorButton(
-                label = "VAT",
-                onClick = { showVAT = true },
-                tonal = true,
-                capsule = true,
-                fillMaxWidth = false,
-                modifier = Modifier.padding(4.dp)
-            )
-            CalculatorButton(
-                label = "BMI",
-                onClick = { showBMI = true },
-                tonal = true,
-                capsule = true,
-                fillMaxWidth = false,
-                modifier = Modifier.padding(4.dp)
-            )
-        }
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Text(
-                text = "From",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.fillMaxWidth()
-            )
-            UnitRow(
-                value = uiState.fromValue,
-                onValueChange = { vm.onAction(ConverterAction.FromValueChange(it)) },
-                selectedUnit = uiState.fromUnit,
-                units = uiState.category.units,
-                onUnitSelected = { vm.onAction(ConverterAction.FromUnitChange(it)) }
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            IconButton(
-                onClick = { vm.onAction(ConverterAction.SwapUnits) },
-                modifier = Modifier.align(Alignment.CenterHorizontally)
+    ) { paddingValues ->
+        Column(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Icon(
-                    painter = painterResource(id = android.R.drawable.ic_menu_sort_by_size),
-                    contentDescription = "Swap units",
-                    tint = MaterialTheme.colorScheme.primary
+                CalculatorButton(
+                    label = "History",
+                    onClick = { showHistory = true },
+                    tonal = true,
+                    capsule = true,
+                    fillMaxWidth = false,
+                    modifier = Modifier.padding(4.dp)
+                )
+                CalculatorButton(
+                    label = "Loan",
+                    onClick = { showLoan = true },
+                    tonal = true,
+                    capsule = true,
+                    fillMaxWidth = false,
+                    modifier = Modifier.padding(4.dp)
+                )
+                CalculatorButton(
+                    label = "EMI",
+                    onClick = { showEMI = true },
+                    tonal = true,
+                    capsule = true,
+                    fillMaxWidth = false,
+                    modifier = Modifier.padding(4.dp)
+                )
+                CalculatorButton(
+                    label = "VAT",
+                    onClick = { showVAT = true },
+                    tonal = true,
+                    capsule = true,
+                    fillMaxWidth = false,
+                    modifier = Modifier.padding(4.dp)
+                )
+                CalculatorButton(
+                    label = "BMI",
+                    onClick = { showBMI = true },
+                    tonal = true,
+                    capsule = true,
+                    fillMaxWidth = false,
+                    modifier = Modifier.padding(4.dp)
                 )
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "To",
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.fillMaxWidth()
-            )
-            UnitRow(
-                value = uiState.toValue,
-                onValueChange = { /* To value is read-only */ },
-                selectedUnit = uiState.toUnit,
-                units = uiState.category.units,
-                onUnitSelected = { vm.onAction(ConverterAction.ToUnitChange(it)) },
-                valueReadOnly = true,
-                unitReadOnly = false
-            )
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            // Save to History Button
-            Button(
-                onClick = { vm.saveToHistory() },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = uiState.toValue.isNotEmpty() && uiState.toValue != "Error"
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text("Save to History")
+                CategoryDropdown(
+                    selectedCategory = uiState.category,
+                    onCategorySelected = { vm.onAction(ConverterAction.CategoryChange(it)) }
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = "From",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                UnitRow(
+                    value = uiState.fromValue,
+                    onValueChange = { vm.onAction(ConverterAction.FromValueChange(it)) },
+                    selectedUnit = uiState.fromUnit,
+                    units = uiState.category.units,
+                    onUnitSelected = { vm.onAction(ConverterAction.FromUnitChange(it)) }
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                IconButton(
+                    onClick = { vm.onAction(ConverterAction.SwapUnits) },
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                ) {
+                    Icon(
+                        painter = painterResource(id = android.R.drawable.ic_menu_sort_by_size),
+                        contentDescription = "Swap units",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(
+                    text = "To",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                UnitRow(
+                    value = uiState.toValue,
+                    onValueChange = { /* To value is read-only */ },
+                    selectedUnit = uiState.toUnit,
+                    units = uiState.category.units,
+                    onUnitSelected = { vm.onAction(ConverterAction.ToUnitChange(it)) },
+                    valueReadOnly = true,
+                    unitReadOnly = false
+                )
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                // Save to History Button
+                Button(
+                    onClick = { vm.saveToHistory() },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = uiState.toValue.isNotEmpty() && uiState.toValue != "Error"
+                ) {
+                    Text("Save to History")
+                }
             }
         }
     }
@@ -225,7 +238,8 @@ fun CategoryDropdown(
         ConversionCategory.Data,
         ConversionCategory.Speed,
         ConversionCategory.Time,
-        ConversionCategory.Discount
+        ConversionCategory.Discount,
+        ConversionCategory.Tip
     )
 
     Box {
@@ -237,14 +251,16 @@ fun CategoryDropdown(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            categories.forEach { category ->
-                DropdownMenuItem(
-                    text = { Text(category.name) },
-                    onClick = {
-                        onCategorySelected(category)
-                        expanded = false
-                    }
-                )
+            Column {
+                categories.forEach { category ->
+                    DropdownMenuItem(
+                        text = { Text(category.name) },
+                        onClick = {
+                            onCategorySelected(category)
+                            expanded = false
+                        }
+                    )
+                }
             }
         }
     }
