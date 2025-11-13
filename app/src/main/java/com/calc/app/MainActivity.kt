@@ -10,6 +10,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.calc.app.ui.theme.CalcTheme
@@ -19,6 +23,7 @@ import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
 import androidx.compose.ui.viewinterop.AndroidView
 import com.calc.app.ui.screens.RootScreen
+import com.calc.app.ui.screens.SplashScreen
 import androidx.compose.foundation.layout.Spacer
 
 class MainActivity : ComponentActivity() {
@@ -26,7 +31,12 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         MobileAds.initialize(this) {}
         setContent {
-            CalcApp()
+            var showSplash by remember { mutableStateOf(true) }
+            if (showSplash) {
+                SplashScreen(onTimeout = { showSplash = false })
+            } else {
+                CalcApp()
+            }
         }
     }
 }

@@ -16,14 +16,23 @@ class LoanCalculatorViewModel : ViewModel() {
         val interestRate: String = "",
         val loanTenure: String = "",
         val tenureType: TenureType = TenureType.YEARS,
+        val interestType: InterestType = InterestType.ANNUITY,
         val monthlyPayment: String = "",
         val totalInterest: String = "",
-        val totalPayment: String = ""
+        val totalPayment: String = "",
+        val principalPercentage: Float = 0f,
+        val interestPercentage: Float = 0f
     )
 
     enum class TenureType(val displayName: String, val multiplier: Int) {
         YEARS("Years", 12),
         MONTHS("Months", 1)
+    }
+
+    enum class InterestType(val displayName: String) {
+        FLAT("Flat Rate"),
+        EFFECTIVE("Effective Rate"),
+        ANNUITY("Annuity")
     }
 
     private val _uiState = MutableStateFlow(LoanUiState())
@@ -49,6 +58,11 @@ class LoanCalculatorViewModel : ViewModel() {
         calculate()
     }
 
+    fun onInterestTypeChange(type: InterestType) {
+        _uiState.update { it.copy(interestType = type) }
+        calculate()
+    }
+
     fun reset() {
         _uiState.value = LoanUiState()
     }
@@ -65,21 +79,47 @@ class LoanCalculatorViewModel : ViewModel() {
         val months = tenure * state.tenureType.multiplier
         val monthlyRate = annualRate / 12 / 100
 
-        val emi = if (monthlyRate > 0) {
-            val factor = (1 + monthlyRate).pow(months)
-            principal * monthlyRate * factor / (factor - 1)
-        } else {
-            principal / months
+        val (emi, totalInterest, totalPayment) = when (state.interestType) {
+            InterestType.FLAT -> {
+                val interest = principal * (annualRate / 100) * (months / 12.0)
+                val total = principal + interest
+                val monthly = total / months
+                Triple(monthly, interest, total)
+            }
+            InterestType.EFFECTIVE -> {
+                var balance = principal
+                var interest = 0.0
+                for (i in 1..months) {
+                    val monthlyInterest = balance * monthlyRate
+                    interest += monthlyInterest
+                    balance -= (principal / months)
+                }
+                val total = principal + interest
+                val monthly = total / months
+                Triple(monthly, interest, total)
+            }
+            InterestType.ANNUITY -> {
+                val emi = if (monthlyRate > 0) {
+                    val factor = (1 + monthlyRate).pow(months)
+                    principal * monthlyRate * factor / (factor - 1)
+                } else {
+                    principal / months
+                }
+                val totalPayment = emi * months
+                val totalInterest = totalPayment - principal
+                Triple(emi, totalInterest, totalPayment)
+            }
         }
-
-        val totalPayment = emi * months
-        val totalInterest = totalPayment - principal
+        val principalPercentage = (principal / totalPayment * 100).toFloat()
+        val interestPercentage = (totalInterest / totalPayment * 100).toFloat()
 
         _uiState.update {
             it.copy(
                 monthlyPayment = formatCurrency(emi),
                 totalInterest = formatCurrency(totalInterest),
-                totalPayment = formatCurrency(totalPayment)
+                totalPayment = formatCurrency(totalPayment),
+                principalPercentage = principalPercentage,
+                interestPercentage = interestPercentage
             )
         }
     }
@@ -89,7 +129,8 @@ class LoanCalculatorViewModel : ViewModel() {
         if (state.monthlyPayment.isNotEmpty()) {
             val expression = "Loan: ${state.loanAmount}\n" +
                     "Interest: ${state.interestRate}%\n" +
-                    "Term: ${state.loanTenure} ${state.tenureType.displayName}"
+                    "Term: ${state.loanTenure} ${state.tenureType.displayName}\n" +
+                    "Type: ${state.interestType.displayName}"
             val result = "EMI: ${state.monthlyPayment}\n" +
                     "Total Interest: ${state.totalInterest}\n" +
                     "Total Payment: ${state.totalPayment}"

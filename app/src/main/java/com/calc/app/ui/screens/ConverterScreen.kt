@@ -14,10 +14,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -53,7 +53,6 @@ fun ConverterScreen(
     val uiState by vm.uiState.collectAsState()
     var showHistory by remember { mutableStateOf(false) }
     var showLoan by remember { mutableStateOf(false) }
-    var showEMI by remember { mutableStateOf(false) }
     var showVAT by remember { mutableStateOf(false) }
     var showBMI by remember { mutableStateOf(false) }
 
@@ -64,11 +63,6 @@ fun ConverterScreen(
 
     if (showLoan) {
         LoanCalculatorScreen(onBack = { showLoan = false })
-        return
-    }
-
-    if (showEMI) {
-        EMICalculatorScreen(onBack = { showEMI = false })
         return
     }
 
@@ -122,14 +116,6 @@ fun ConverterScreen(
                     modifier = Modifier.padding(4.dp)
                 )
                 CalculatorButton(
-                    label = "EMI",
-                    onClick = { showEMI = true },
-                    tonal = true,
-                    capsule = true,
-                    fillMaxWidth = false,
-                    modifier = Modifier.padding(4.dp)
-                )
-                CalculatorButton(
                     label = "VAT",
                     onClick = { showVAT = true },
                     tonal = true,
@@ -146,19 +132,44 @@ fun ConverterScreen(
                     modifier = Modifier.padding(4.dp)
                 )
             }
+            HorizontalDivider()
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState())
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                val categories = listOf(
+                    ConversionCategory.Area,
+                    ConversionCategory.Length,
+                    ConversionCategory.Temperature,
+                    ConversionCategory.Volume,
+                    ConversionCategory.Mass,
+                    ConversionCategory.Data,
+                    ConversionCategory.Speed,
+                    ConversionCategory.Time,
+                    ConversionCategory.Discount,
+                    ConversionCategory.Tip
+                )
+                categories.forEach { category ->
+                    CalculatorButton(
+                        label = category.name,
+                        onClick = { vm.onAction(ConverterAction.CategoryChange(category)) },
+                        tonal = uiState.category == category,
+                        capsule = true,
+                        fillMaxWidth = false,
+                        modifier = Modifier.padding(4.dp)
+                    )
+                }
+            }
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                CategoryDropdown(
-                    selectedCategory = uiState.category,
-                    onCategorySelected = { vm.onAction(ConverterAction.CategoryChange(it)) }
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
                 Text(
                     text = "From",
                     style = MaterialTheme.typography.labelMedium,
@@ -221,50 +232,6 @@ fun ConverterScreen(
 }
 
 @Composable
-fun CategoryDropdown(
-    selectedCategory: ConversionCategory,
-    onCategorySelected: (ConversionCategory) -> Unit
-) {
-    var expanded by remember { mutableStateOf(false) }
-
-    val categories = listOf(
-        ConversionCategory.Area,
-        ConversionCategory.Length,
-        ConversionCategory.Temperature,
-        ConversionCategory.Volume,
-        ConversionCategory.Mass,
-        ConversionCategory.Data,
-        ConversionCategory.Speed,
-        ConversionCategory.Time,
-        ConversionCategory.Discount,
-        ConversionCategory.Tip
-    )
-
-    Box {
-        Button(onClick = { expanded = true }) {
-            Text(selectedCategory.name)
-            Icon(Icons.Default.ArrowDropDown, contentDescription = "Select category")
-        }
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            Column {
-                categories.forEach { category ->
-                    DropdownMenuItem(
-                        text = { Text(category.name) },
-                        onClick = {
-                            onCategorySelected(category)
-                            expanded = false
-                        }
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Composable
 fun UnitRow(
     value: String,
     onValueChange: (String) -> Unit,
@@ -313,7 +280,6 @@ fun UnitDropdown(
         Box {
             Button(onClick = { expanded = true }) {
                 Text(selectedUnit.displayName)
-                Icon(Icons.Default.ArrowDropDown, contentDescription = "Select unit")
             }
             DropdownMenu(
                 expanded = expanded,

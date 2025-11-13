@@ -123,7 +123,8 @@ private fun SegmentedButtonRow(
             onClick = { onUnitSystemChange(BMICalculatorViewModel.BMIUnitSystem.METRIC) },
             modifier = Modifier.weight(1f),
             colors = ButtonDefaults.buttonColors(
-                containerColor = if (selectedUnitSystem == BMICalculatorViewModel.BMIUnitSystem.METRIC) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+                containerColor = if (selectedUnitSystem == BMICalculatorViewModel.BMIUnitSystem.METRIC) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                contentColor = if (selectedUnitSystem == BMICalculatorViewModel.BMIUnitSystem.METRIC) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
             )
         ) {
             Text("Metric")
@@ -133,7 +134,8 @@ private fun SegmentedButtonRow(
             onClick = { onUnitSystemChange(BMICalculatorViewModel.BMIUnitSystem.US_STANDARD) },
             modifier = Modifier.weight(1f),
             colors = ButtonDefaults.buttonColors(
-                containerColor = if (selectedUnitSystem == BMICalculatorViewModel.BMIUnitSystem.US_STANDARD) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+                containerColor = if (selectedUnitSystem == BMICalculatorViewModel.BMIUnitSystem.US_STANDARD) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                contentColor = if (selectedUnitSystem == BMICalculatorViewModel.BMIUnitSystem.US_STANDARD) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
             )
         ) {
             Text("US Standard")
