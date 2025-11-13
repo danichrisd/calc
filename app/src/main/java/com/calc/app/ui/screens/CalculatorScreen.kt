@@ -100,7 +100,7 @@ fun CalculatorScreen(
 		) {
 			Column(modifier = Modifier.padding(12.dp)) {
 				Text(
-					text = uiState.expression,
+					text = uiState.displayExpression,
 					style = when {
 						isSmallScreen -> MaterialTheme.typography.titleMedium
 						isLargeScreen -> MaterialTheme.typography.headlineMedium

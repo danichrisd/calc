@@ -16,7 +16,31 @@ class CalculatorViewModel : ViewModel() {
 		val expression: String = "",
 		val result: String = "",
 		val isDegrees: Boolean = true
-	)
+	) {
+		val displayExpression: String
+			get() = expression
+				.replace("sqrt(", "√(")
+				.replace("cbrt(", "³√(")
+				.replace("sin(", "sin(")
+				.replace("cos(", "cos(")
+				.replace("tan(", "tan(")
+				.replace("asin(", "sin⁻¹(")
+				.replace("acos(", "cos⁻¹(")
+				.replace("atan(", "tan⁻¹(")
+				.replace("sinh(", "sinh(")
+				.replace("cosh(", "cosh(")
+				.replace("tanh(", "tanh(")
+				.replace("asinh(", "sinh⁻¹(")
+				.replace("acosh(", "cosh⁻¹(")
+				.replace("atanh(", "atanh⁻¹(")
+				.replace("ln(", "ln(")
+				.replace("log(", "log(")
+				.replace("exp(", "eˣ(")
+				.replace("abs(", "|(")
+				.replace("pi", "π")
+				.replace("^2", "²")
+				.replace("^3", "³")
+	}
 
 	private val _uiState = MutableStateFlow(UiState())
 	val uiState = _uiState.asStateFlow()
@@ -41,30 +65,30 @@ class CalculatorViewModel : ViewModel() {
 			CalculatorKey.LParen,
 			CalculatorKey.RParen -> append(key.display)
 
-			CalculatorKey.Pi -> append("pi")
-			CalculatorKey.Sqrt -> append("sqrt(")
-			CalculatorKey.Sin -> append("sin(")
-			CalculatorKey.Cos -> append("cos(")
-			CalculatorKey.Tan -> append("tan(")
-			CalculatorKey.Asin -> append("asin(")
-			CalculatorKey.Acos -> append("acos(")
-			CalculatorKey.Atan -> append("atan(")
-			CalculatorKey.Ln -> append("ln(")
-			CalculatorKey.Log -> append("log(")
-			CalculatorKey.Exp -> append("exp(")
-			CalculatorKey.Sinh -> append("sinh(")
-			CalculatorKey.Cosh -> append("cosh(")
-			CalculatorKey.Tanh -> append("tanh(")
-			CalculatorKey.Asinh -> append("asinh(")
-			CalculatorKey.Acosh -> append("acosh(")
-			CalculatorKey.Atanh -> append("atanh(")
-			CalculatorKey.CubeRoot -> append("cbrt(")
-			CalculatorKey.Cube -> append("^3")
-			CalculatorKey.TwoPowX -> append("2^")
-			CalculatorKey.Euler -> append("e")
-			CalculatorKey.Square -> append("^2")
-			CalculatorKey.Reciprocal -> append("1/")
-			CalculatorKey.Abs -> append("abs(")
+			CalculatorKey.Pi -> append(key.expression)
+			CalculatorKey.Sqrt -> append(key.expression)
+			CalculatorKey.Sin -> append(key.expression)
+			CalculatorKey.Cos -> append(key.expression)
+			CalculatorKey.Tan -> append(key.expression)
+			CalculatorKey.Asin -> append(key.expression)
+			CalculatorKey.Acos -> append(key.expression)
+			CalculatorKey.Atan -> append(key.expression)
+			CalculatorKey.Ln -> append(key.expression)
+			CalculatorKey.Log -> append(key.expression)
+			CalculatorKey.Exp -> append(key.expression)
+			CalculatorKey.Sinh -> append(key.expression)
+			CalculatorKey.Cosh -> append(key.expression)
+			CalculatorKey.Tanh -> append(key.expression)
+			CalculatorKey.Asinh -> append(key.expression)
+			CalculatorKey.Acosh -> append(key.expression)
+			CalculatorKey.Atanh -> append(key.expression)
+			CalculatorKey.CubeRoot -> append(key.expression)
+			CalculatorKey.Cube -> append(key.expression)
+			CalculatorKey.TwoPowX -> append(key.expression)
+			CalculatorKey.Euler -> append(key.expression)
+			CalculatorKey.Square -> append(key.expression)
+			CalculatorKey.Reciprocal -> append(key.expression)
+			CalculatorKey.Abs -> append(key.expression)
 
 			CalculatorKey.DegRadToggle -> setState { copy(isDegrees = !isDegrees) }.also { reeval() }
 			CalculatorKey.ScientificToggle -> { /* handled in UI */ }
@@ -170,12 +194,23 @@ class CalculatorViewModel : ViewModel() {
 
 	private fun evaluateAndCommit() {
 		val current = _uiState.value
+		val expression = autoCloseParentheses(current.expression)
 		try {
-			val value = ExpressionEvaluator.evaluate(current.expression, current.isDegrees)
+			val value = ExpressionEvaluator.evaluate(expression, current.isDegrees)
 			setState { copy(expression = value.formatAsDisplay(), result = "") }
 		} catch (_: Throwable) {
 			// ignore on equals if invalid
 		}
+	}
+
+	private fun autoCloseParentheses(expr: String): String {
+		var result = expr
+		val openCount = result.count { it == '(' }
+		val closeCount = result.count { it == ')' }
+		repeat(openCount - closeCount) {
+			result += ")"
+		}
+		return result
 	}
 
 	private fun reeval() {
@@ -197,15 +232,15 @@ class CalculatorViewModel : ViewModel() {
 		return text
 	}
 
-	enum class CalculatorKey(val display: String, val isOperator: Boolean = false) {
+	enum class CalculatorKey(val display: String, val expression: String = display, val isOperator: Boolean = false) {
 		AC("AC"),
 		C("C"),
 		Parentheses("()"),
-		Percent("%", true),
-		Divide("÷", true),
-		Multiply("×", true),
-		Minus("−", true),
-		Plus("+", true),
+		Percent("%", "%", true),
+		Divide("÷", "÷", true),
+		Multiply("×", "×", true),
+		Minus("−", "−", true),
+		Plus("+", "+", true),
 		Equals("="),
 		Dot("."),
 		Sign("±"),
@@ -213,16 +248,16 @@ class CalculatorViewModel : ViewModel() {
 		Digit0("0"), Digit1("1"), Digit2("2"), Digit3("3"), Digit4("4"),
 		Digit5("5"), Digit6("6"), Digit7("7"), Digit8("8"), Digit9("9"),
 
-		Pi("π"),
-		Sqrt("√"),
-		Pow("^", true),
-		Exp("eˣ"),
-		Log("log"),
-		Ln("ln"),
-		Sin("sin"),
-		Cos("cos"),
-		Tan("tan"),
-		Asin("sin⁻¹"),
+		Pi("π", "pi"),
+		Sqrt("√", "sqrt("),
+		Pow("^", "^", true),
+		Exp("eˣ", "exp("),
+		Log("log", "log("),
+		Ln("ln", "ln("),
+		Sin("sin", "sin("),
+		Cos("cos", "cos("),
+		Tan("tan", "tan("),
+		Asin("sin⁻¹", "asin("),
 		Acos("cos⁻¹"),
 		Atan("tan⁻¹"),
 		Sinh("sinh"),
@@ -231,13 +266,13 @@ class CalculatorViewModel : ViewModel() {
 		Asinh("sinh⁻¹"),
 		Acosh("cosh⁻¹"),
 		Atanh("tanh⁻¹"),
-		CubeRoot("³√"),
-		Cube("x³"),
-		TwoPowX("2ˣ"),
-		Euler("e"),
-		Square("x²"),
-		Reciprocal("1/x"),
-		Abs("|x|"),
+		CubeRoot("³√", "cbrt("),
+		Cube("x³", "^3"),
+		TwoPowX("2ˣ", "2^"),
+		Euler("e", "e"),
+		Square("x²", "^2"),
+		Reciprocal("1/x", "1/"),
+		Abs("|x|", "abs("),
 		Fact("x!"),
 		LParen("("),
 		RParen(")"),
