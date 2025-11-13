@@ -44,4 +44,17 @@
 	<string name="key_rparen">)</string>
 	<string name="key_deg">DEG</string>
 	<string name="key_rad">RAD</string>
+    <string name="key_cubert">³√</string>
+    <string name="key_2_power_x">2ˣ</string>
+    <string name="key_x_cubed">x³</string>
+    <string name="key_sinh">sinh</string>
+    <string name="key_cosh">cosh</string>
+    <string name="key_tanh">tanh</string>
+    <string name="key_asinh">asinh</string>
+    <string name="key_acosh">acosh</string>
+    <string name="key_atanh">atanh</string>
+    <string name="key_abs">|x|</string>
+    <string name="key_reciprocal">1/x</string>
+    <string name="key_e">e</string>
+    <string name="key_x_squared">x²</string>
 </resources>

@@ -52,8 +52,22 @@ class CalculatorViewModel : ViewModel() {
 			CalculatorKey.Ln -> append("ln(")
 			CalculatorKey.Log -> append("log(")
 			CalculatorKey.Exp -> append("exp(")
+			CalculatorKey.Sinh -> append("sinh(")
+			CalculatorKey.Cosh -> append("cosh(")
+			CalculatorKey.Tanh -> append("tanh(")
+			CalculatorKey.Asinh -> append("asinh(")
+			CalculatorKey.Acosh -> append("acosh(")
+			CalculatorKey.Atanh -> append("atanh(")
+			CalculatorKey.CubeRoot -> append("cbrt(")
+			CalculatorKey.Cube -> append("^3")
+			CalculatorKey.TwoPowX -> append("2^")
+			CalculatorKey.Euler -> append("e")
+			CalculatorKey.Square -> append("^2")
+			CalculatorKey.Reciprocal -> append("1/")
+			CalculatorKey.Abs -> append("abs(")
 
 			CalculatorKey.DegRadToggle -> setState { copy(isDegrees = !isDegrees) }.also { reeval() }
+			CalculatorKey.ScientificToggle -> { /* handled in UI */ }
 
 			else -> append(key.display)
 		}
@@ -68,12 +82,9 @@ class CalculatorViewModel : ViewModel() {
 		val current = _uiState.value.expression
 		val newExpression = when (text) {
 			"0" -> {
-				// Don't allow leading zeros for numbers
-				if (current.isEmpty() || !current.last().isDigit()) {
-					current + text
-				} else {
-					current // Ignore leading zero
-				}
+				val lastNumIndex = lastNumberStartIndex(current)
+				val lastNum = current.substring(lastNumIndex)
+				if (lastNum == "0") current else current + text
 			}
 			in "1".."9" -> {
 				// If last character is '0' and before that is not a digit/operator, replace the '0'
@@ -94,10 +105,13 @@ class CalculatorViewModel : ViewModel() {
 		if (expr.isEmpty()) return
 		val newExpr = when {
 			expr.endsWith("sqrt(") -> expr.dropLast(5)
-			expr.endsWith("asin(") || expr.endsWith("acos(") || expr.endsWith("atan(") -> expr.dropLast(5)
+			expr.endsWith("asin(") || expr.endsWith("acos(") || expr.endsWith("atan(") ||
+				expr.endsWith("sinh(") || expr.endsWith("cosh(") || expr.endsWith("tanh(") ||
+				expr.endsWith("asinh(") || expr.endsWith("acosh(") || expr.endsWith("atanh(") ||
+				expr.endsWith("cbrt(") || expr.endsWith("abs(") -> expr.dropLast(5)
 			expr.endsWith("sin(") || expr.endsWith("cos(") || expr.endsWith("tan(") ||
 				expr.endsWith("log(") || expr.endsWith("ln(") || expr.endsWith("exp(") -> expr.dropLast(4)
-			expr.endsWith("pi") -> expr.dropLast(2)
+			expr.endsWith("pi") || expr.endsWith("^2") || expr.endsWith("^3") -> expr.dropLast(2)
 			else -> expr.dropLast(1)
 		}
 		setState { copy(expression = newExpr) }
@@ -208,13 +222,27 @@ class CalculatorViewModel : ViewModel() {
 		Sin("sin"),
 		Cos("cos"),
 		Tan("tan"),
-		Asin("asin"),
-		Acos("acos"),
-		Atan("atan"),
-		Fact("!"),
+		Asin("sin⁻¹"),
+		Acos("cos⁻¹"),
+		Atan("tan⁻¹"),
+		Sinh("sinh"),
+		Cosh("cosh"),
+		Tanh("tanh"),
+		Asinh("sinh⁻¹"),
+		Acosh("cosh⁻¹"),
+		Atanh("tanh⁻¹"),
+		CubeRoot("³√"),
+		Cube("x³"),
+		TwoPowX("2ˣ"),
+		Euler("e"),
+		Square("x²"),
+		Reciprocal("1/x"),
+		Abs("|x|"),
+		Fact("x!"),
 		LParen("("),
 		RParen(")"),
-		DegRadToggle("DEG/RAD")
+		DegRadToggle("Rad"),
+		ScientificToggle("⇆")
 	}
 }
 
