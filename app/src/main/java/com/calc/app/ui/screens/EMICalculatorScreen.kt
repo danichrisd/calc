@@ -52,7 +52,7 @@ fun EMICalculatorScreen(
             OutlinedTextField(
                 value = uiState.principalAmount,
                 onValueChange = { vm.onPrincipalChange(it) },
-                label = { Text("Jumlah Principal") },
+                label = { Text("Principal Amount") },
                 placeholder = { Text("Contoh: 50000000") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth()
@@ -62,7 +62,7 @@ fun EMICalculatorScreen(
             OutlinedTextField(
                 value = uiState.interestRate,
                 onValueChange = { vm.onInterestRateChange(it) },
-                label = { Text("Bunga per Tahun (%)") },
+                label = { Text("Annual Interest Rate (%)") },
                 placeholder = { Text("Contoh: 10.5") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 modifier = Modifier.fillMaxWidth()
@@ -72,7 +72,7 @@ fun EMICalculatorScreen(
             OutlinedTextField(
                 value = uiState.loanTenure,
                 onValueChange = { vm.onTenureChange(it) },
-                label = { Text("Jangka Waktu (Bulan)") },
+                label = { Text("Term (Months)") },
                 placeholder = { Text("Contoh: 60") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth()
@@ -93,20 +93,20 @@ fun EMICalculatorScreen(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Text(
-                            text = "Hasil Perhitungan EMI",
+                            text = "EMI Calculation Results",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
                         
                         ResultRow("EMI per Bulan", uiState.emiAmount)
-                        ResultRow("Total Bunga", uiState.totalInterest)
-                        ResultRow("Total Pembayaran", uiState.totalAmount)
+                        ResultRow("Total Interest", uiState.totalInterest)
+                        ResultRow("Total Payment", uiState.totalAmount)
                         
                         Spacer(modifier = Modifier.height(8.dp))
                         
                         // Percentage Breakdown
                         Text(
-                            text = "Komposisi Pembayaran",
+                            text = "Payment Breakdown",
                             style = MaterialTheme.typography.bodyMedium,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -182,7 +182,7 @@ fun EMICalculatorScreen(
                                 }
                                 Spacer(modifier = Modifier.width(4.dp))
                                 Text(
-                                    text = "Bunga ${String.format("%.1f", uiState.interestPercentage)}%",
+                                    text = "Interest ${String.format("%.1f", uiState.interestPercentage)}%",
                                     style = MaterialTheme.typography.bodySmall
                                 )
                             }
@@ -208,7 +208,7 @@ fun EMICalculatorScreen(
                     modifier = Modifier.weight(1f),
                     enabled = uiState.emiAmount.isNotEmpty()
                 ) {
-                    Text("Simpan ke History")
+                    Text("Save to History")
                 }
             }
         }

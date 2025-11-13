@@ -83,10 +83,10 @@ class EMICalculatorViewModel : ViewModel() {
         val state = _uiState.value
         if (state.emiAmount.isNotEmpty()) {
             val expression = "Principal: ${state.principalAmount}\n" +
-                    "Bunga: ${state.interestRate}%\n" +
-                    "Tenor: ${state.loanTenure} bulan"
+                    "Interest: ${state.interestRate}%\n" +
+                    "Term: ${state.loanTenure} months"
             val result = "EMI: ${state.emiAmount}\n" +
-                    "Total Bunga: ${state.totalInterest}\n" +
+                    "Total Interest: ${state.totalInterest}\n" +
                     "Total: ${state.totalAmount}"
             
             HistoryViewModel.getInstance().addHistory(

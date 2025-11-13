@@ -30,7 +30,7 @@ fun BMICalculatorScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Kalkulator BMI") },
+                title = { Text("BMI Calculator") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -54,7 +54,7 @@ fun BMICalculatorScreen(
             OutlinedTextField(
                 value = uiState.weight,
                 onValueChange = { vm.onWeightChange(it) },
-                label = { Text("Berat Badan (kg)") },
+                label = { Text("Weight (kg)") },
                 placeholder = { Text("Contoh: 70") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 modifier = Modifier.fillMaxWidth()
@@ -64,7 +64,7 @@ fun BMICalculatorScreen(
             OutlinedTextField(
                 value = uiState.height,
                 onValueChange = { vm.onHeightChange(it) },
-                label = { Text("Tinggi Badan (cm)") },
+                label = { Text("Height (cm)") },
                 placeholder = { Text("Contoh: 170") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 modifier = Modifier.fillMaxWidth()
@@ -89,7 +89,7 @@ fun BMICalculatorScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "BMI Anda",
+                            text = "Your BMI",
                             style = MaterialTheme.typography.titleMedium,
                             color = Color.White
                         )
@@ -106,7 +106,7 @@ fun BMICalculatorScreen(
                             color = Color.White
                         )
                         Text(
-                            text = "Rentang: ${uiState.bmiCategory.range}",
+                            text = "Range: ${uiState.bmiCategory.range}",
                             style = MaterialTheme.typography.bodyMedium,
                             color = Color.White.copy(alpha = 0.9f)
                         )
@@ -125,7 +125,7 @@ fun BMICalculatorScreen(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "Kategori BMI",
+                            text = "BMI Categories",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
@@ -177,7 +177,7 @@ fun BMICalculatorScreen(
                         modifier = Modifier.padding(16.dp)
                     ) {
                         Text(
-                            text = "💡 Saran Kesehatan",
+                            text = "💡 Health Advice",
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -208,7 +208,7 @@ fun BMICalculatorScreen(
                     modifier = Modifier.weight(1f),
                     enabled = uiState.bmiValue.isNotEmpty()
                 ) {
-                    Text("Simpan ke History")
+                    Text("Save to History")
                 }
             }
         }

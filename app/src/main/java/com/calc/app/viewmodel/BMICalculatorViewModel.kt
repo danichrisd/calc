@@ -23,10 +23,10 @@ class BMICalculatorViewModel : ViewModel() {
         val color: Long,
         val range: String
     ) {
-        UNDERWEIGHT("Kekurangan Berat Badan", 0xFF64B5F6, "< 18.5"),
+        UNDERWEIGHT("Underweight", 0xFF64B5F6, "< 18.5"),
         NORMAL("Normal", 0xFF66BB6A, "18.5 - 24.9"),
-        OVERWEIGHT("Kelebihan Berat Badan", 0xFFFFB74D, "25.0 - 29.9"),
-        OBESE("Obesitas", 0xFFEF5350, "≥ 30.0")
+        OVERWEIGHT("Overweight", 0xFFFFB74D, "25.0 - 29.9"),
+        OBESE("Obese", 0xFFEF5350, "≥ 30.0")
     }
     
     private val _uiState = MutableStateFlow(BMIUiState())
@@ -68,10 +68,10 @@ class BMICalculatorViewModel : ViewModel() {
         }
         
         val tip = when (category) {
-            BMICategory.UNDERWEIGHT -> "Pertimbangkan untuk menambah asupan kalori dan nutrisi yang seimbang."
-            BMICategory.NORMAL -> "Pertahankan gaya hidup sehat dengan diet seimbang dan olahraga teratur."
-            BMICategory.OVERWEIGHT -> "Kurangi asupan kalori dan tingkatkan aktivitas fisik."
-            BMICategory.OBESE -> "Konsultasikan dengan dokter untuk program penurunan berat badan yang aman."
+            BMICategory.UNDERWEIGHT -> "Consider increasing calorie intake and balanced nutrition."
+            BMICategory.NORMAL -> "Maintain a healthy lifestyle with balanced diet and regular exercise."
+            BMICategory.OVERWEIGHT -> "Reduce calorie intake and increase physical activity."
+            BMICategory.OBESE -> "Consult a doctor for a safe weight loss program."
         }
         
         _uiState.update {
@@ -86,11 +86,11 @@ class BMICalculatorViewModel : ViewModel() {
     fun saveToHistory() {
         val state = _uiState.value
         if (state.bmiValue.isNotEmpty()) {
-            val expression = "Berat: ${state.weight} kg\n" +
-                    "Tinggi: ${state.height} cm"
+            val expression = "Weight: ${state.weight} kg\n" +
+                    "Height: ${state.height} cm"
             val result = "BMI: ${state.bmiValue}\n" +
-                    "Kategori: ${state.bmiCategory.displayName}\n" +
-                    "Rentang: ${state.bmiCategory.range}"
+                    "Category: ${state.bmiCategory.displayName}\n" +
+                    "Range: ${state.bmiCategory.range}"
             
             HistoryViewModel.getInstance().addHistory(
                 CalculationHistory(

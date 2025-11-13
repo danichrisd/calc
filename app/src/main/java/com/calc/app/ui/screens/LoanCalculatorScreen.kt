@@ -53,7 +53,7 @@ fun LoanCalculatorScreen(
             OutlinedTextField(
                 value = uiState.loanAmount,
                 onValueChange = { vm.onLoanAmountChange(it) },
-                label = { Text("Jumlah Pinjaman") },
+                label = { Text("Loan Amount") },
                 placeholder = { Text("Contoh: 100000000") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth()
@@ -63,7 +63,7 @@ fun LoanCalculatorScreen(
             OutlinedTextField(
                 value = uiState.interestRate,
                 onValueChange = { vm.onInterestRateChange(it) },
-                label = { Text("Bunga per Tahun (%)") },
+                label = { Text("Annual Interest Rate (%)") },
                 placeholder = { Text("Contoh: 8.5") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                 modifier = Modifier.fillMaxWidth()
@@ -77,7 +77,7 @@ fun LoanCalculatorScreen(
                 OutlinedTextField(
                     value = uiState.loanTenure,
                     onValueChange = { vm.onLoanTenureChange(it) },
-                    label = { Text("Jangka Waktu") },
+                    label = { Text("Term") },
                     placeholder = { Text("Contoh: 15") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                     modifier = Modifier.weight(1f)
@@ -125,14 +125,14 @@ fun LoanCalculatorScreen(
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         Text(
-                            text = "Hasil Perhitungan",
+                            text = "Calculation Results",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
                         
-                        ResultRow("Cicilan per Bulan", uiState.monthlyPayment)
-                        ResultRow("Total Bunga", uiState.totalInterest)
-                        ResultRow("Total Pembayaran", uiState.totalPayment)
+                        ResultRow("Monthly Payment", uiState.monthlyPayment)
+                        ResultRow("Total Interest", uiState.totalInterest)
+                        ResultRow("Total Payment", uiState.totalPayment)
                     }
                 }
             }
@@ -154,7 +154,7 @@ fun LoanCalculatorScreen(
                     modifier = Modifier.weight(1f),
                     enabled = uiState.monthlyPayment.isNotEmpty()
                 ) {
-                    Text("Simpan ke History")
+                    Text("Save to History")
                 }
             }
         }

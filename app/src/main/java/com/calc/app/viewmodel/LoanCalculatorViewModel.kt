@@ -21,8 +21,8 @@ class LoanCalculatorViewModel : ViewModel() {
     )
     
     enum class TenureType(val displayName: String, val multiplier: Int) {
-        YEARS("Tahun", 12),
-        MONTHS("Bulan", 1)
+        YEARS("Years", 12),
+        MONTHS("Months", 1)
     }
     
     private val _uiState = MutableStateFlow(LoanUiState())
@@ -87,12 +87,12 @@ class LoanCalculatorViewModel : ViewModel() {
     fun saveToHistory() {
         val state = _uiState.value
         if (state.monthlyPayment.isNotEmpty()) {
-            val expression = "Pinjaman: ${state.loanAmount}\n" +
-                    "Bunga: ${state.interestRate}%\n" +
-                    "Tenor: ${state.loanTenure} ${state.tenureType.displayName}"
+            val expression = "Loan: ${state.loanAmount}\n" +
+                    "Interest: ${state.interestRate}%\n" +
+                    "Term: ${state.loanTenure} ${state.tenureType.displayName}"
             val result = "EMI: ${state.monthlyPayment}\n" +
-                    "Total Bunga: ${state.totalInterest}\n" +
-                    "Total Bayar: ${state.totalPayment}"
+                    "Total Interest: ${state.totalInterest}\n" +
+                    "Total Payment: ${state.totalPayment}"
             
             HistoryViewModel.getInstance().addHistory(
                 CalculationHistory(
