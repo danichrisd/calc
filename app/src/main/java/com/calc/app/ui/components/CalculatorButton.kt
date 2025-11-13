@@ -16,7 +16,9 @@ fun CalculatorButton(
 	onClick: () -> Unit,
 	tonal: Boolean = false,
 	modifier: Modifier = Modifier,
-	capsule: Boolean = false
+	capsule: Boolean = false,
+	aspectRatio: Float? = null,
+	fillMaxWidth: Boolean = true
 ) {
 	val configuration = LocalConfiguration.current
 	val screenWidthDp = configuration.screenWidthDp
@@ -27,10 +29,10 @@ fun CalculatorButton(
 	val isLargeScreen = screenWidthDp >= 600
 
 	// Responsive aspect ratios
-	val aspectRatio = when {
-		capsule && isSmallScreen -> 2.2f  // More compact on small screens
+	val defaultAspectRatio = when {
+		capsule && isSmallScreen -> 2.3f  // More compact on small screens
 		capsule && isLargeScreen -> 2.5f  // Less wide on large screens for scientific functions
-		capsule -> 2.4f  // More compact default capsule ratio for scientific functions
+		capsule -> 2.5f  // More compact default capsule ratio for scientific functions
 		isSmallScreen -> 1.6f  // Make buttons shorter to guarantee fit
 		isLargeScreen -> 1.4f  // Make buttons shorter
 		else -> 1.5f  // Make buttons shorter
@@ -62,9 +64,13 @@ fun CalculatorButton(
 		onClick = onClick,
 		colors = colors,
 		shape = shape,
-		modifier = modifier
-			.fillMaxWidth()
-			.aspectRatio(aspectRatio)
+		modifier = if (fillMaxWidth) {
+			modifier
+				.fillMaxWidth()
+				.aspectRatio(aspectRatio ?: defaultAspectRatio)
+		} else {
+			modifier
+		}
 	) {
 		Text(
 			text = label,

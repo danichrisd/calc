@@ -127,7 +127,7 @@ fun CalculatorScreen(
 
 		Box(modifier = Modifier.weight(1f)) {
 			if (showConverter) {
-				ConverterScreen()
+				ConverterScreen(onBack = { showConverter = false })
 			} else if (isScientific) {
 				ScientificCalculatorLayout(
 					onPress = vm::onKey,
@@ -205,21 +205,19 @@ private fun StandardPad(
 					modifier = Modifier.padding(8.dp)
 				) {
 					Icon(
-						painter = painterResource(id = R.drawable.ic_calc),
+						painter = painterResource(id = R.drawable.ic_scientific),
 						contentDescription = stringResource(R.string.tab_scientific),
 						tint = MaterialTheme.colorScheme.primary
 					)
 				}
-				IconButton(
+				CalculatorButton(
+					label = "Converter",
 					onClick = onToggleConverter,
-					modifier = Modifier.padding(8.dp)
-				) {
-					Icon(
-						painter = painterResource(id = android.R.drawable.ic_menu_sort_by_size),
-						contentDescription = stringResource(R.string.tab_converter),
-						tint = MaterialTheme.colorScheme.primary
-					)
-				}
+					tonal = true,
+					capsule = true,
+					fillMaxWidth = false,
+					modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 4.dp, bottom = 4.dp)
+				)
 			}
 
 			// Backspace icon (right)
@@ -344,7 +342,7 @@ private fun ScientificCalculatorLayout(
 		CalculatorKey.Sinh to R.string.key_sinh,
 		CalculatorKey.Cosh to R.string.key_cosh,
 		CalculatorKey.Tanh to R.string.key_tanh,
-		CalculatorKey.C to R.string.key_c, // Placeholder for future use
+		null to null, // Empty space
 		// Row 4
 		CalculatorKey.Asinh to R.string.key_asinh,
 		CalculatorKey.Acosh to R.string.key_acosh,
@@ -398,16 +396,14 @@ private fun ScientificCalculatorLayout(
 						tint = MaterialTheme.colorScheme.primary
 					)
 				}
-				IconButton(
+				CalculatorButton(
+					label = "Converter",
 					onClick = onToggleConverter,
-					modifier = Modifier.padding(8.dp)
-				) {
-					Icon(
-						painter = painterResource(id = android.R.drawable.ic_menu_sort_by_size),
-						contentDescription = stringResource(R.string.tab_converter),
-						tint = MaterialTheme.colorScheme.primary
-					)
-				}
+					tonal = true,
+					capsule = true,
+					fillMaxWidth = false,
+					modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 4.dp, bottom = 4.dp)
+				)
 			}
 			IconButton(
 				onClick = { onPress(CalculatorKey.C) },
@@ -435,11 +431,47 @@ private fun ScientificCalculatorLayout(
 				.fillMaxWidth()
 				.weight(1f)
 		) {
-			items(items) { (key, labelId) ->
+			// Scientific keys (first 16 items)
+			items(items.take(16)) { (key, labelId) ->
 				if (key != null) {
 					val label = labelId?.let { stringResource(id = it) } ?: key.display
 					val tonal = when (key) {
-						CalculatorKey.AC, CalculatorKey.C, CalculatorKey.Parentheses, CalculatorKey.Percent -> false
+						CalculatorKey.AC, CalculatorKey.Parentheses, CalculatorKey.Percent -> false
+						CalculatorKey.Equals -> false
+						else -> !key.isOperator
+					}
+					CalculatorButton(
+						label = label,
+						onClick = {
+							if (key == CalculatorKey.ScientificToggle) {
+								scientificPage = 1 - scientificPage
+							} else {
+								onPress(key)
+							}
+						},
+						tonal = tonal,
+						capsule = true
+					)
+				} else {
+					// Empty space, if any
+					androidx.compose.foundation.layout.Spacer(modifier = Modifier)
+				}
+			}
+
+			// Separator line spanning all 4 columns
+			item(span = { GridItemSpan(4) }) {
+				HorizontalDivider(
+					modifier = Modifier.padding(vertical = 8.dp),
+					color = MaterialTheme.colorScheme.outlineVariant
+				)
+			}
+
+			// Standard keys (remaining items)
+			items(items.drop(16)) { (key, labelId) ->
+				if (key != null) {
+					val label = labelId?.let { stringResource(id = it) } ?: key.display
+					val tonal = when (key) {
+						CalculatorKey.AC, CalculatorKey.Parentheses, CalculatorKey.Percent -> false
 						CalculatorKey.Equals -> false
 						else -> !key.isOperator
 					}
