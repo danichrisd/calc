@@ -193,7 +193,7 @@ class CalculatorViewModel : ViewModel() {
 
 	private fun Double.formatAsDisplay(): String {
 		if (this.isNaN() || this.isInfinite()) return "Error"
-		val text = "%,.10f".format(this).trimEnd('0').trimEnd('.')
+		val text = "%.10f".format(this).trimEnd('0').trimEnd('.')
 		return text
 	}
 
