@@ -27,6 +27,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -69,12 +70,36 @@ fun ConverterScreen(
 			horizontalAlignment = Alignment.CenterHorizontally,
 			verticalArrangement = Arrangement.spacedBy(16.dp)
 		) {
+			Text(
+				text = "From",
+				style = MaterialTheme.typography.labelMedium,
+				color = MaterialTheme.colorScheme.onSurfaceVariant,
+				modifier = Modifier.fillMaxWidth()
+			)
 			UnitRow(
 				value = uiState.fromValue,
 				onValueChange = { vm.onAction(ConverterAction.FromValueChange(it)) },
 				selectedUnit = uiState.fromUnit,
 				units = uiState.category.units,
 				onUnitSelected = { vm.onAction(ConverterAction.FromUnitChange(it)) }
+			)
+			
+			androidx.compose.material3.IconButton(
+				onClick = { vm.onAction(ConverterAction.SwapUnits) },
+				modifier = Modifier.align(Alignment.CenterHorizontally)
+			) {
+				androidx.compose.material3.Icon(
+					painter = painterResource(id = android.R.drawable.ic_menu_sort_by_size),
+					contentDescription = "Swap units",
+					tint = MaterialTheme.colorScheme.primary
+				)
+			}
+			
+			Text(
+				text = "To",
+				style = MaterialTheme.typography.labelMedium,
+				color = MaterialTheme.colorScheme.onSurfaceVariant,
+				modifier = Modifier.fillMaxWidth()
 			)
 			UnitRow(
 				value = uiState.toValue,
@@ -85,9 +110,6 @@ fun ConverterScreen(
 				valueReadOnly = true,
 				unitReadOnly = false
 			)
-			Button(onClick = { vm.onAction(ConverterAction.SwapUnits) }) {
-				Text("Swap")
-			}
 		}
 	}
 }
@@ -98,6 +120,19 @@ fun CategoryDropdown(
 	onCategorySelected: (ConversionCategory) -> Unit
 ) {
 	var expanded by remember { mutableStateOf(false) }
+	
+	val categories = listOf(
+		ConversionCategory.Area,
+		ConversionCategory.Length,
+		ConversionCategory.Temperature,
+		ConversionCategory.Volume,
+		ConversionCategory.Mass,
+		ConversionCategory.Data,
+		ConversionCategory.Speed,
+		ConversionCategory.Time,
+		ConversionCategory.Tip
+	)
+	
 	Box {
 		Button(onClick = { expanded = true }) {
 			Text(selectedCategory.name)
@@ -107,14 +142,15 @@ fun CategoryDropdown(
 			expanded = expanded,
 			onDismissRequest = { expanded = false }
 		) {
-			// Hardcoding categories for now
-			DropdownMenuItem(
-				text = { Text("Area") },
-				onClick = {
-					onCategorySelected(ConversionCategory.Area)
-					expanded = false
-				}
-			)
+			categories.forEach { category ->
+				DropdownMenuItem(
+					text = { Text(category.name) },
+					onClick = {
+						onCategorySelected(category)
+						expanded = false
+					}
+				)
+			}
 		}
 	}
 }

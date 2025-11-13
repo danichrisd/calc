@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlin.math.absoluteValue
 
 class ConverterViewModel : ViewModel() {
 
@@ -52,7 +53,22 @@ class ConverterViewModel : ViewModel() {
         _uiState.update {
             val fromValueDouble = it.fromValue.toDoubleOrNull() ?: return@update it.copy(toValue = "")
             val result = it.category.convert(fromValueDouble, it.fromUnit, it.toUnit)
-            it.copy(toValue = result.toString())
+            
+            // Format the result for better display
+            val formattedResult = when {
+                result.isNaN() || result.isInfinite() -> "Error"
+                result == 0.0 -> "0"
+                result.absoluteValue >= 1_000_000 || result.absoluteValue < 0.0001 -> {
+                    // Use scientific notation for very large or very small numbers
+                    String.format("%.6e", result)
+                }
+                else -> {
+                    // Regular formatting, remove trailing zeros
+                    String.format("%.10f", result).trimEnd('0').trimEnd('.')
+                }
+            }
+            
+            it.copy(toValue = formattedResult)
         }
     }
 }

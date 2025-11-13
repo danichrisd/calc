@@ -33,19 +33,24 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun CalcApp() {
 	CalcTheme {
-		Column(modifier = Modifier.fillMaxSize()) {
-			// Calculator content area, takes all available space except for the ad
-			Box(modifier = Modifier.weight(1f)) {
-				RootScreen()
-			}
+		androidx.compose.material3.Surface(
+			modifier = Modifier.fillMaxSize(),
+			color = MaterialTheme.colorScheme.background
+		) {
+			Column(modifier = Modifier.fillMaxSize()) {
+				// Calculator content area, takes all available space except for the ad
+				Box(modifier = Modifier.weight(1f)) {
+					RootScreen()
+				}
 
-			// Dedicated ad area at the bottom
-			Box(
-				modifier = Modifier
-					.fillMaxWidth()
-					.height(50.dp)
-			) {
-				BannerAd()
+				// Dedicated ad area at the bottom
+				Box(
+					modifier = Modifier
+						.fillMaxWidth()
+						.height(50.dp)
+				) {
+					BannerAd()
+				}
 			}
 		}
 	}
