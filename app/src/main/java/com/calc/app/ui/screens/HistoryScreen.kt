@@ -24,13 +24,13 @@ fun HistoryScreen(
 ) {
     val historyList by vm.filteredHistory.collectAsState()
     val currentFilter by vm.filteredType.collectAsState()
-    var showFilterMenu by remember { mutableStateOf(false) }
-    var showDeleteDialog by remember { mutableStateOf(false) }
+    val (showFilterMenu, setShowFilterMenu) = remember { mutableStateOf(false) }
+    val (showDeleteDialog, setShowDeleteDialog) = remember { mutableStateOf(false) }
     
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Riwayat Perhitungan") },
+                title = { Text("Calculation History") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(
@@ -41,7 +41,7 @@ fun HistoryScreen(
                 },
                 actions = {
                     // Filter Button
-                    IconButton(onClick = { showFilterMenu = true }) {
+                    IconButton(onClick = { setShowFilterMenu(true) }) {
                         Icon(
                             imageVector = Icons.Default.FilterList,
                             contentDescription = "Filter"
@@ -51,27 +51,27 @@ fun HistoryScreen(
                     // Filter Dropdown
                     DropdownMenu(
                         expanded = showFilterMenu,
-                        onDismissRequest = { showFilterMenu = false }
+                        onDismissRequest = { setShowFilterMenu(false) }
                     ) {
                         DropdownMenuItem(
-                            text = { Text("Semua") },
+                            text = { Text("All") },
                             onClick = {
                                 vm.setFilter(null)
-                                showFilterMenu = false
+                                setShowFilterMenu(false)
                             },
                             leadingIcon = if (currentFilter == null) {
                                 { Text("✓") }
                             } else null
                         )
                         
-                        Divider()
+                        HorizontalDivider()
                         
                         CalculationType.entries.forEach { type ->
                             DropdownMenuItem(
                                 text = { Text(type.displayName) },
                                 onClick = {
                                     vm.setFilter(type)
-                                    showFilterMenu = false
+                                    setShowFilterMenu(false)
                                 },
                                 leadingIcon = if (currentFilter == type) {
                                     { Text("✓") }
@@ -82,7 +82,7 @@ fun HistoryScreen(
                     
                     // Delete All Button
                     if (historyList.isNotEmpty()) {
-                        IconButton(onClick = { showDeleteDialog = true }) {
+                        IconButton(onClick = { setShowDeleteDialog(true) }) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
                                 contentDescription = "Clear History"
@@ -113,16 +113,16 @@ fun HistoryScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
-                        text = "Belum ada riwayat",
+                        text = "No history yet",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.SemiBold
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = if (currentFilter != null) {
-                            "Tidak ada riwayat untuk ${currentFilter?.displayName}"
+                            "No history for ${currentFilter?.displayName}"
                         } else {
-                            "Hasil perhitungan Anda akan muncul di sini"
+                            "Your calculation results will appear here"
                         },
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -148,22 +148,22 @@ fun HistoryScreen(
     // Delete Confirmation Dialog
     if (showDeleteDialog) {
         AlertDialog(
-            onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Hapus Semua Riwayat?") },
-            text = { Text("Tindakan ini tidak dapat dibatalkan.") },
+            onDismissRequest = { setShowDeleteDialog(false) },
+            title = { Text("Delete All History?") },
+            text = { Text("This action cannot be undone.") },
             confirmButton = {
                 TextButton(
                     onClick = {
                         vm.clearHistory()
-                        showDeleteDialog = false
+                        setShowDeleteDialog(false)
                     }
                 ) {
-                    Text("Hapus")
+                    Text("Delete")
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Batal")
+                TextButton(onClick = { setShowDeleteDialog(false) }) {
+                    Text("Cancel")
                 }
             }
         )
@@ -175,7 +175,7 @@ fun HistoryItem(
     history: com.calc.app.data.CalculationHistory,
     onDelete: () -> Unit
 ) {
-    var showDeleteDialog by remember { mutableStateOf(false) }
+    val (showDeleteDialog, setShowDeleteDialog) = remember { mutableStateOf(false) }
     
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -199,7 +199,7 @@ fun HistoryItem(
                 )
                 
                 IconButton(
-                    onClick = { showDeleteDialog = true },
+                    onClick = { setShowDeleteDialog(true) },
                     modifier = Modifier.size(24.dp)
                 ) {
                     Icon(
@@ -246,21 +246,21 @@ fun HistoryItem(
     // Delete Item Dialog
     if (showDeleteDialog) {
         AlertDialog(
-            onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Hapus riwayat ini?") },
+            onDismissRequest = { setShowDeleteDialog(false) },
+            title = { Text("Delete this history item?") },
             confirmButton = {
                 TextButton(
                     onClick = {
                         onDelete()
-                        showDeleteDialog = false
+                        setShowDeleteDialog(false)
                     }
                 ) {
-                    Text("Hapus")
+                    Text("Delete")
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Batal")
+                TextButton(onClick = { setShowDeleteDialog(false) }) {
+                    Text("Cancel")
                 }
             }
         )

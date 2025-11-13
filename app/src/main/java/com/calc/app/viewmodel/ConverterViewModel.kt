@@ -276,11 +276,11 @@ sealed class ConversionCategory(val name: String, val units: List<ConversionUnit
         }
     }
 
-    object Tip : ConversionCategory("Tip", TipUnit.values().toList()) {
+    object Discount : ConversionCategory("Discount", DiscountUnit.values().toList()) {
         override fun convert(value: Double, from: ConversionUnit, to: ConversionUnit): Double {
-            // Tip calculation is a bit different - it's percentage based
+            // Discount calculation is a bit different - it's percentage based
             val percentage = when (from) {
-                is TipUnit -> from.percentage
+                is DiscountUnit -> from.percentage
                 else -> 0.0
             }
             return value * percentage / 100.0
@@ -379,7 +379,7 @@ enum class TimeUnit(override val displayName: String, override val symbol: Strin
     Year("Year", "yr", 31556952.0)  // Average year
 }
 
-enum class TipUnit(override val displayName: String, override val symbol: String, val percentage: Double) : ConversionUnit {
+enum class DiscountUnit(override val displayName: String, override val symbol: String, val percentage: Double) : ConversionUnit {
     FivePercent("5%", "5%", 5.0),
     TenPercent("10%", "10%", 10.0),
     FifteenPercent("15%", "15%", 15.0),

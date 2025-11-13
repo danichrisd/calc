@@ -23,7 +23,7 @@ enum class CalculationType(val displayName: String) {
     CONVERTER("Unit Converter"),
     LOAN("Loan Calculator"),
     EMI("EMI Calculator"),
-    GST("GST Calculator"),
+    VAT("VAT Calculator"),
     BMI("BMI Calculator")
 }
 
