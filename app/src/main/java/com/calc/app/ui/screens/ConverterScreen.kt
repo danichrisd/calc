@@ -1,5 +1,6 @@
 package com.calc.app.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -55,6 +56,7 @@ fun ConverterScreen(
     var showLoan by remember { mutableStateOf(false) }
     var showVAT by remember { mutableStateOf(false) }
     var showBMI by remember { mutableStateOf(false) }
+    var showPremium by remember { mutableStateOf(false) }
 
     if (showHistory) {
         HistoryScreen(onBack = { showHistory = false })
@@ -73,6 +75,11 @@ fun ConverterScreen(
 
     if (showBMI) {
         BMICalculatorScreen(onBack = { showBMI = false })
+        return
+    }
+
+    if (showPremium) {
+        PremiumScreen(onBack = { showPremium = false })
         return
     }
 
@@ -131,6 +138,14 @@ fun ConverterScreen(
                     fillMaxWidth = false,
                     modifier = Modifier.padding(4.dp)
                 )
+                CalculatorButton(
+                    label = "Premium",
+                    onClick = { showPremium = true },
+                    tonal = true,
+                    capsule = true,
+                    fillMaxWidth = false,
+                    modifier = Modifier.padding(4.dp)
+                )
             }
             HorizontalDivider()
             Row(
@@ -170,12 +185,14 @@ fun ConverterScreen(
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text(
-                    text = "From",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                AnimatedVisibility(visible = uiState.fromValue.isNotEmpty()) {
+                    Text(
+                        text = "From",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
                 UnitRow(
                     value = uiState.fromValue,
                     onValueChange = { vm.onAction(ConverterAction.FromValueChange(it)) },
@@ -199,12 +216,14 @@ fun ConverterScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Text(
-                    text = "To",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                AnimatedVisibility(visible = uiState.toValue.isNotEmpty()) {
+                    Text(
+                        text = "To",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
                 UnitRow(
                     value = uiState.toValue,
                     onValueChange = { /* To value is read-only */ },
