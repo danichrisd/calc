@@ -26,7 +26,7 @@ fun BMICalculatorScreen(
 ) {
     val uiState by vm.uiState.collectAsState()
     val scrollState = rememberScrollState()
-    
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -50,168 +50,183 @@ fun BMICalculatorScreen(
                 .verticalScroll(scrollState),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Weight Input
-            OutlinedTextField(
-                value = uiState.weight,
-                onValueChange = { vm.onWeightChange(it) },
-                label = { Text("Weight (kg)") },
-                placeholder = { Text("Contoh: 70") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                modifier = Modifier.fillMaxWidth()
-            )
-            
-            // Height Input
-            OutlinedTextField(
-                value = uiState.height,
-                onValueChange = { vm.onHeightChange(it) },
-                label = { Text("Height (cm)") },
-                placeholder = { Text("Contoh: 170") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                modifier = Modifier.fillMaxWidth()
-            )
-            
+            // Unit System Selection
+            SegmentedButtonRow(uiState.unitSystem, vm::onUnitSystemChange)
+
+            if (uiState.unitSystem == BMICalculatorViewModel.BMIUnitSystem.METRIC) {
+                OutlinedTextField(
+                    value = uiState.weight,
+                    onValueChange = { vm.onWeightChange(it) },
+                    label = { Text("Weight (kg)") },
+                    placeholder = { Text("e.g., 70") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                OutlinedTextField(
+                    value = uiState.height,
+                    onValueChange = { vm.onHeightChange(it) },
+                    label = { Text("Height (cm)") },
+                    placeholder = { Text("e.g., 170") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            } else {
+                OutlinedTextField(
+                    value = uiState.weight,
+                    onValueChange = { vm.onWeightChange(it) },
+                    label = { Text("Weight (lbs)") },
+                    placeholder = { Text("e.g., 154") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(
+                        value = uiState.height,
+                        onValueChange = { vm.onHeightChange(it) },
+                        label = { Text("Height (ft)") },
+                        placeholder = { Text("e.g., 5") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        modifier = Modifier.weight(1f)
+                    )
+                    OutlinedTextField(
+                        value = uiState.heightInches,
+                        onValueChange = { vm.onHeightInchesChange(it) },
+                        label = { Text("Inches") },
+                        placeholder = { Text("e.g., 7") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+
             Divider(modifier = Modifier.padding(vertical = 8.dp))
-            
+
             // Results
             if (uiState.bmiValue.isNotEmpty()) {
-                // BMI Value Display
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color(uiState.bmiCategory.color)
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = "Your BMI",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = Color.White
-                        )
-                        Text(
-                            text = uiState.bmiValue,
-                            style = MaterialTheme.typography.displayLarge,
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White
-                        )
-                        Text(
-                            text = uiState.bmiCategory.displayName,
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.SemiBold,
-                            color = Color.White
-                        )
-                        Text(
-                            text = "Range: ${uiState.bmiCategory.range}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = Color.White.copy(alpha = 0.9f)
-                        )
-                    }
-                }
-                
-                // BMI Categories Reference
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        Text(
-                            text = "BMI Categories",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                        
-                        BMICalculatorViewModel.BMICategory.values().forEach { category ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(12.dp)
-                                    ) {
-                                        Card(
-                                            colors = CardDefaults.cardColors(
-                                                containerColor = Color(category.color)
-                                            ),
-                                            modifier = Modifier.fillMaxSize()
-                                        ) {}
-                                    }
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(
-                                        text = category.displayName,
-                                        style = MaterialTheme.typography.bodyMedium
-                                    )
-                                }
-                                Text(
-                                    text = category.range,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                    }
-                }
-                
-                // Health Tip
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp)
-                    ) {
-                        Text(
-                            text = "💡 Health Advice",
-                            style = MaterialTheme.typography.titleSmall,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = uiState.healthTip,
-                            style = MaterialTheme.typography.bodyMedium,
-                            textAlign = TextAlign.Justify
-                        )
-                    }
-                }
+                BMICard(uiState)
+                HealthAdviceCard(uiState.healthTip)
             }
-            
+
             // Action Buttons
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                OutlinedButton(
-                    onClick = { vm.reset() },
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text("Reset")
-                }
-                
-                Button(
-                    onClick = { vm.saveToHistory() },
-                    modifier = Modifier.weight(1f),
-                    enabled = uiState.bmiValue.isNotEmpty()
-                ) {
-                    Text("Save to History")
-                }
-            }
+            ActionButtons(vm::reset, vm::saveToHistory, uiState.bmiValue.isNotEmpty())
         }
     }
 }
 
+@Composable
+private fun SegmentedButtonRow(
+    selectedUnitSystem: BMICalculatorViewModel.BMIUnitSystem,
+    onUnitSystemChange: (BMICalculatorViewModel.BMIUnitSystem) -> Unit
+) {
+    Row(modifier = Modifier.fillMaxWidth()) {
+        Button(
+            onClick = { onUnitSystemChange(BMICalculatorViewModel.BMIUnitSystem.METRIC) },
+            modifier = Modifier.weight(1f),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (selectedUnitSystem == BMICalculatorViewModel.BMIUnitSystem.METRIC) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+            )
+        ) {
+            Text("Metric")
+        }
+        Spacer(modifier = Modifier.width(8.dp))
+        Button(
+            onClick = { onUnitSystemChange(BMICalculatorViewModel.BMIUnitSystem.US_STANDARD) },
+            modifier = Modifier.weight(1f),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = if (selectedUnitSystem == BMICalculatorViewModel.BMIUnitSystem.US_STANDARD) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant
+            )
+        ) {
+            Text("US Standard")
+        }
+    }
+}
+
+@Composable
+private fun BMICard(uiState: BMICalculatorViewModel.BMIUiState) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(uiState.bmiCategory.color)
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = "Your BMI",
+                style = MaterialTheme.typography.titleMedium,
+                color = Color.White
+            )
+            Text(
+                text = uiState.bmiValue,
+                style = MaterialTheme.typography.displayLarge,
+                fontWeight = FontWeight.Bold,
+                color = Color.White
+            )
+            Text(
+                text = uiState.bmiCategory.displayName,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.White
+            )
+            Text(
+                text = "Range: ${uiState.bmiCategory.range}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.White.copy(alpha = 0.9f)
+            )
+        }
+    }
+}
+
+@Composable
+private fun HealthAdviceCard(healthTip: String) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = "💡 Health Advice",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = healthTip,
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Justify
+            )
+        }
+    }
+}
+
+@Composable
+private fun ActionButtons(onReset: () -> Unit, onSave: () -> Unit, isSaveEnabled: Boolean) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        OutlinedButton(
+            onClick = onReset,
+            modifier = Modifier.weight(1f)
+        ) {
+            Text("Reset")
+        }
+
+        Button(
+            onClick = onSave,
+            modifier = Modifier.weight(1f),
+            enabled = isSaveEnabled
+        ) {
+            Text("Save to History")
+        }
+    }
+}

@@ -6,10 +6,11 @@ import com.calc.app.data.CalculationType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import java.text.DecimalFormat
 import kotlin.math.pow
 
 class LoanCalculatorViewModel : ViewModel() {
-    
+
     data class LoanUiState(
         val loanAmount: String = "",
         val interestRate: String = "",
@@ -19,62 +20,61 @@ class LoanCalculatorViewModel : ViewModel() {
         val totalInterest: String = "",
         val totalPayment: String = ""
     )
-    
+
     enum class TenureType(val displayName: String, val multiplier: Int) {
         YEARS("Years", 12),
         MONTHS("Months", 1)
     }
-    
+
     private val _uiState = MutableStateFlow(LoanUiState())
     val uiState = _uiState.asStateFlow()
-    
+
     fun onLoanAmountChange(value: String) {
         _uiState.update { it.copy(loanAmount = value) }
         calculate()
     }
-    
+
     fun onInterestRateChange(value: String) {
         _uiState.update { it.copy(interestRate = value) }
         calculate()
     }
-    
+
     fun onLoanTenureChange(value: String) {
         _uiState.update { it.copy(loanTenure = value) }
         calculate()
     }
-    
+
     fun onTenureTypeChange(type: TenureType) {
         _uiState.update { it.copy(tenureType = type) }
         calculate()
     }
-    
+
     fun reset() {
         _uiState.value = LoanUiState()
     }
-    
+
     private fun calculate() {
         val state = _uiState.value
-        
-        val principal = state.loanAmount.replace(".", "").replace(",", ".").toDoubleOrNull() ?: return
+
+        val principal = state.loanAmount.replace(",", ".").toDoubleOrNull() ?: return
         val annualRate = state.interestRate.replace(",", ".").toDoubleOrNull() ?: return
         val tenure = state.loanTenure.toIntOrNull() ?: return
-        
+
         if (principal <= 0 || annualRate < 0 || tenure <= 0) return
-        
+
         val months = tenure * state.tenureType.multiplier
         val monthlyRate = annualRate / 12 / 100
-        
-        // EMI Formula: P * r * (1+r)^n / ((1+r)^n - 1)
+
         val emi = if (monthlyRate > 0) {
             val factor = (1 + monthlyRate).pow(months)
             principal * monthlyRate * factor / (factor - 1)
         } else {
             principal / months
         }
-        
+
         val totalPayment = emi * months
         val totalInterest = totalPayment - principal
-        
+
         _uiState.update {
             it.copy(
                 monthlyPayment = formatCurrency(emi),
@@ -83,7 +83,7 @@ class LoanCalculatorViewModel : ViewModel() {
             )
         }
     }
-    
+
     fun saveToHistory() {
         val state = _uiState.value
         if (state.monthlyPayment.isNotEmpty()) {
@@ -93,7 +93,7 @@ class LoanCalculatorViewModel : ViewModel() {
             val result = "EMI: ${state.monthlyPayment}\n" +
                     "Total Interest: ${state.totalInterest}\n" +
                     "Total Payment: ${state.totalPayment}"
-            
+
             HistoryViewModel.getInstance().addHistory(
                 CalculationHistory(
                     type = CalculationType.LOAN,
@@ -103,17 +103,9 @@ class LoanCalculatorViewModel : ViewModel() {
             )
         }
     }
-    
+
     private fun formatCurrency(number: Double): String {
-        val formatted = String.format("%.2f", number)
-        val parts = formatted.split(".")
-        val integerPart = parts[0]
-        val decimalPart = if (parts.size > 1) parts[1] else "00"
-        
-        // Add thousand separators
-        val formattedInteger = integerPart.reversed().chunked(3).joinToString(".").reversed()
-        
-        return "Rp $formattedInteger,$decimalPart"
+        val formatter = DecimalFormat("#,###.##")
+        return formatter.format(number)
     }
 }
-
