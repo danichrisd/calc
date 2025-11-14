@@ -53,6 +53,14 @@ class CalculatorViewModel : ViewModel() {
     private var isResultDisplayed = false
 
     fun onKey(key: CalculatorKey) {
+        // AC should always reset the state immediately.
+        if (key == CalculatorKey.AC) {
+            setState { copy(expression = "", result = "") }
+            isResultDisplayed = false
+            reeval()
+            return
+        }
+
         // If a result is showing, the next key press requires special logic.
         if (isResultDisplayed && key != CalculatorKey.Equals) {
             val currentResult = _uiState.value.expression
@@ -80,10 +88,6 @@ class CalculatorViewModel : ViewModel() {
 
         // Standard key handling for when a result is not displayed.
         when (key) {
-            CalculatorKey.AC -> {
-                setState { copy(expression = "", result = "") }
-                isResultDisplayed = false
-            }
             CalculatorKey.C -> {
                 backspace()
                 isResultDisplayed = false
