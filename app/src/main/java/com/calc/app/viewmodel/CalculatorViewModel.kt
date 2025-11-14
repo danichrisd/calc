@@ -50,56 +50,53 @@ class CalculatorViewModel : ViewModel() {
     val uiState = _uiState.asStateFlow()
 
     private var evalJob: Job? = null
+    private var isResultDisplayed = false
 
     fun onKey(key: CalculatorKey) {
+        // If a result is showing, the next key press requires special logic.
+        if (isResultDisplayed && key != CalculatorKey.Equals) {
+            val currentResult = _uiState.value.expression
+            isResultDisplayed = false // Flag is reset on any key press after result.
+
+            when {
+                // Case 1: A digit is pressed. This starts a completely new calculation.
+                key.display.length == 1 && key.display.first().isDigit() -> {
+                    setState { copy(expression = key.expression, result = "") }
+                }
+                // Case 2: A function with parenthesis is pressed (e.g., sin, sqrt, log).
+                // These should wrap the previous result.
+                key.expression.endsWith("(") -> {
+                    setState { copy(expression = key.expression + currentResult, result = "") }
+                }
+                // Case 3: An operator or a postfix function is pressed.
+                // This continues the calculation with the previous result.
+                else -> {
+                    setState { copy(expression = currentResult + key.expression, result = "") }
+                }
+            }
+            reeval() // Re-evaluate the newly formed expression.
+            return // The key press has been fully handled.
+        }
+
+        // Standard key handling for when a result is not displayed.
         when (key) {
-            CalculatorKey.AC -> setState { copy(expression = "", result = "") }
-            CalculatorKey.C -> backspace()
+            CalculatorKey.AC -> {
+                setState { copy(expression = "", result = "") }
+                isResultDisplayed = false
+            }
+            CalculatorKey.C -> {
+                backspace()
+                isResultDisplayed = false
+            }
             CalculatorKey.Equals -> evaluateAndCommit()
             CalculatorKey.Sign -> toggleSign()
             CalculatorKey.Parentheses -> appendParenthesis()
-            CalculatorKey.Percent,
-            CalculatorKey.Divide,
-            CalculatorKey.Multiply,
-            CalculatorKey.Minus,
-            CalculatorKey.Plus,
-            CalculatorKey.Dot,
-            CalculatorKey.Fact,
-            CalculatorKey.Pow,
-            CalculatorKey.LParen,
-            CalculatorKey.RParen -> append(key.display)
-
-            CalculatorKey.Pi -> append(key.expression)
-            CalculatorKey.Sqrt -> append(key.expression)
-            CalculatorKey.Sin -> append(key.expression)
-            CalculatorKey.Cos -> append(key.expression)
-            CalculatorKey.Tan -> append(key.expression)
-            CalculatorKey.Asin -> append(key.expression)
-            CalculatorKey.Acos -> append(key.expression)
-            CalculatorKey.Atan -> append(key.expression)
-            CalculatorKey.Ln -> append(key.expression)
-            CalculatorKey.Log -> append(key.expression)
-            CalculatorKey.Exp -> append(key.expression)
-            CalculatorKey.Sinh -> append(key.expression)
-            CalculatorKey.Cosh -> append(key.expression)
-            CalculatorKey.Tanh -> append(key.expression)
-            CalculatorKey.Asinh -> append(key.expression)
-            CalculatorKey.Acosh -> append(key.expression)
-            CalculatorKey.Atanh -> append(key.expression)
-            CalculatorKey.CubeRoot -> append(key.expression)
-            CalculatorKey.Cube -> append(key.expression)
-            CalculatorKey.TwoPowX -> append(key.expression)
-            CalculatorKey.Euler -> append(key.expression)
-            CalculatorKey.Square -> append(key.expression)
-            CalculatorKey.Reciprocal -> append(key.expression)
-            CalculatorKey.Abs -> append(key.expression)
-
-            CalculatorKey.DegRadToggle -> setState { copy(isDegrees = !isDegrees) }.also { reeval() }
-            CalculatorKey.ScientificToggle -> { /* handled in UI */ }
-
-            else -> append(key.display)
+            else -> append(key.expression)
         }
-        reeval()
+
+        if (key != CalculatorKey.Equals) {
+            reeval()
+        }
     }
 
     private fun setState(transform: UiState.() -> UiState) {
@@ -115,7 +112,6 @@ class CalculatorViewModel : ViewModel() {
                 if (lastNum == "0") current else current + text
             }
             in "1".."9" -> {
-                // If last character is '0' and before that is not a digit/operator, replace the '0'
                 if (current.isNotEmpty() && current.last() == '0' &&
                     (current.length == 1 || !current[current.length - 2].isDigit())) {
                     current.dropLast(1) + text
@@ -151,21 +147,15 @@ class CalculatorViewModel : ViewModel() {
         val closeCount = expr.count { it == ')' }
 
         if (openCount > closeCount) {
-            // Ada kurung buka yang belum tertutup, tambahkan kurung tutup
             append(")")
         } else {
-            // Tidak ada kurung buka yang belum tertutup, atau jumlah sama
-            // Cek apakah kita sedang di tengah angka atau setelah operator
             val lastChar = expr.lastOrNull()
-            if (lastChar == null || lastChar in "+-×÷^(") {
-                // Awal ekspresi atau setelah operator, tambahkan kurung buka
+            if (lastChar == null || lastChar in "+-*/^(") {
                 append("(")
             } else {
-                // Setelah angka atau fungsi, tambahkan kurung tutup jika ada kurung buka yang belum tertutup
                 if (openCount > closeCount) {
                     append(")")
                 } else {
-                    // Kalikan dengan kurung buka untuk operasi matematika
                     append("*(")
                 }
             }
@@ -178,7 +168,6 @@ class CalculatorViewModel : ViewModel() {
             append("-")
             return
         }
-        // Wrap the last number with negation: (-(...))
         val idx = lastNumberStartIndex(expr)
         if (idx == expr.length) return
         val (start, end) = idx to expr.length
@@ -203,7 +192,6 @@ class CalculatorViewModel : ViewModel() {
             val value = ExpressionEvaluator.evaluate(expression, current.isDegrees)
             val resultStr = value.formatAsDisplay()
 
-            // Save to history
             if (expression.isNotEmpty() && resultStr != "Error") {
                 val displayExpr = current.displayExpression
                 HistoryViewModel.getInstance().addHistory(
@@ -219,6 +207,7 @@ class CalculatorViewModel : ViewModel() {
             }
 
             setState { copy(expression = resultStr, result = "") }
+            isResultDisplayed = true
         } catch (_: Throwable) {
             // ignore on equals if invalid
         }
@@ -267,9 +256,9 @@ class CalculatorViewModel : ViewModel() {
         C("C"),
         Parentheses("()"),
         Percent("%", "%", true),
-        Divide("÷", "÷", true),
-        Multiply("×", "×", true),
-        Minus("−", "−", true),
+        Divide("÷", "/", true),
+        Multiply("×", "*", true),
+        Minus("−", "-", true),
         Plus("+", "+", true),
         Equals("="),
         Dot("."),
