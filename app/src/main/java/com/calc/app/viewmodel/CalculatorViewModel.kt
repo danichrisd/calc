@@ -22,6 +22,8 @@ class CalculatorViewModel : ViewModel() {
     ) {
         val displayExpression: String
             get() = expression
+                .replace("/", "÷")
+                .replace("*", "×")
                 .replace("sqrt(", "√(")
                 .replace("cbrt(", "³√(")
                 .replace("sin(", "sin(")
