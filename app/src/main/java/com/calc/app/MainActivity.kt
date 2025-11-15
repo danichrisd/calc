@@ -44,9 +44,6 @@ fun CalcApp() {
                     RootScreen()
                 }
 
-                // Spacer to ensure content is not overlapped by the ad
-                Spacer(modifier = Modifier.padding(vertical = 4.dp))
-
                 // Dedicated ad area at the bottom
                 Box(
                     modifier = Modifier.fillMaxWidth()

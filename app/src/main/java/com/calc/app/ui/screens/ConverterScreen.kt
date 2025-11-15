@@ -111,7 +111,6 @@ fun ConverterScreen(
                     onClick = { showHistory = true },
                     tonal = true,
                     capsule = true,
-                    fillMaxWidth = false,
                     modifier = Modifier.padding(4.dp)
                 )
                 CalculatorButton(
@@ -119,7 +118,6 @@ fun ConverterScreen(
                     onClick = { showLoan = true },
                     tonal = true,
                     capsule = true,
-                    fillMaxWidth = false,
                     modifier = Modifier.padding(4.dp)
                 )
                 CalculatorButton(
@@ -127,7 +125,6 @@ fun ConverterScreen(
                     onClick = { showVAT = true },
                     tonal = true,
                     capsule = true,
-                    fillMaxWidth = false,
                     modifier = Modifier.padding(4.dp)
                 )
                 CalculatorButton(
@@ -135,7 +132,6 @@ fun ConverterScreen(
                     onClick = { showBMI = true },
                     tonal = true,
                     capsule = true,
-                    fillMaxWidth = false,
                     modifier = Modifier.padding(4.dp)
                 )
                 CalculatorButton(
@@ -143,7 +139,6 @@ fun ConverterScreen(
                     onClick = { showPremium = true },
                     tonal = true,
                     capsule = true,
-                    fillMaxWidth = false,
                     modifier = Modifier.padding(4.dp)
                 )
             }
@@ -173,7 +168,6 @@ fun ConverterScreen(
                         onClick = { vm.onAction(ConverterAction.CategoryChange(category)) },
                         tonal = uiState.category == category,
                         capsule = true,
-                        fillMaxWidth = false,
                         modifier = Modifier.padding(4.dp)
                     )
                 }
