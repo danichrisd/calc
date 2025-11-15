@@ -113,6 +113,8 @@ class CalculatorViewModel : ViewModel() {
             }
             CalculatorKey.Equals -> evaluateAndCommit()
             CalculatorKey.Sign -> toggleSign()
+            CalculatorKey.Reciprocal -> applyReciprocal()
+            CalculatorKey.Fact -> applyFactorial()
             CalculatorKey.Parentheses -> appendParenthesis()
             else -> append(key.expression)
         }
@@ -238,8 +240,39 @@ class CalculatorViewModel : ViewModel() {
         val (start, end) = idx to expr.length
         val before = expr.substring(0, start)
         val target = expr.substring(start, end)
+
+        if (start > 0 && expr[start - 1] == '(' && expr.last() == ')') {
+            val prevChar = if (start > 1) expr[start - 2] else null
+            if (prevChar == '-') {
+                val outerBefore = expr.substring(0, start - 2)
+                setState { copy(expression = outerBefore + target) }
+                return
+            }
+        }
+
         val wrapped = "(-$target)"
         setState { copy(expression = before + wrapped) }
+    }
+
+    private fun applyReciprocal() {
+        val expr = _uiState.value.expression
+        if (expr.isEmpty()) return
+        val idx = lastNumberStartIndex(expr)
+        if (idx == expr.length) return
+        val (start, end) = idx to expr.length
+        val before = expr.substring(0, start)
+        val target = expr.substring(start, end)
+        val wrapped = "1/($target)"
+        setState { copy(expression = before + wrapped) }
+    }
+
+    private fun applyFactorial() {
+        val expr = _uiState.value.expression
+        if (expr.isEmpty()) return
+        val lastChar = expr.last()
+        if (lastChar.isDigit() || lastChar == ')') {
+            append("!")
+        }
     }
 
     private fun lastNumberStartIndex(expr: String): Int {
