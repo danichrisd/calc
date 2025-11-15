@@ -129,19 +129,61 @@ class CalculatorViewModel : ViewModel() {
     private fun append(text: String) {
         val current = _uiState.value.expression
         val newExpression = when (text) {
-            "0" -> {
-                val lastNumIndex = lastNumberStartIndex(current)
-                val lastNum = current.substring(lastNumIndex)
-                if (lastNum == "0") current else current + text
-            }
-            in "1".."9" -> {
-                if (current.isNotEmpty() && current.last() == '0' &&
-                    (current.length == 1 || !current[current.length - 2].isDigit())) {
-                    current.dropLast(1) + text
+            in "0".."9" -> {
+                if (text == "0") {
+                    val lastNumIndex = lastNumberStartIndex(current)
+                    val lastNum = current.substring(lastNumIndex)
+                    if (lastNum == "0") current else current + text
                 } else {
-                    current + text
+                    if (current.isNotEmpty() && current.last() == '0' &&
+                        (current.length == 1 || !current[current.length - 2].isDigit())
+                    ) {
+                        current.dropLast(1) + text
+                    } else {
+                        current + text
+                    }
                 }
             }
+
+            "." -> {
+                val lastNumIndex = lastNumberStartIndex(current)
+                val lastNum = current.substring(lastNumIndex)
+                if ("." in lastNum || (current.isNotEmpty() && current.last() == ')')) {
+                    current
+                } else if (current.isEmpty() || current.last()
+                        .let { it !in '0'..'9' && it != '%' }
+                ) {
+                    current + "0."
+                } else {
+                    current + "."
+                }
+            }
+
+            "%" -> {
+                if (current.isNotEmpty() && (current.last().isDigit() || current.last() == ')')) {
+                    current + text
+                } else {
+                    current
+                }
+            }
+
+            in listOf("/", "*", "+", "^", "-") -> {
+                if (current.isEmpty()) {
+                    if (text == "-") current + text else current
+                } else {
+                    val lastChar = current.last()
+                    if (lastChar == '(') {
+                        if (text == "-") current + text else current
+                    } else if (lastChar.toString() in listOf("/", "*", "^") && text == "-") {
+                        current + text
+                    } else if (lastChar.toString() in listOf("/", "*", "+", "^", "-")) {
+                        current.dropLast(1) + text
+                    } else {
+                        current + text
+                    }
+                }
+            }
+
             else -> current + text
         }
         setState { copy(expression = newExpression) }
