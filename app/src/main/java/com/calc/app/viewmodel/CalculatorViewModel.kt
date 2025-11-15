@@ -21,31 +21,48 @@ class CalculatorViewModel : ViewModel() {
         val isDegrees: Boolean = true
     ) {
         val displayExpression: String
-            get() = expression
-                .replace("/", "÷")
-                .replace("*", "×")
-                .replace("sqrt(", "√(")
-                .replace("cbrt(", "³√(")
-                .replace("sin(", "sin(")
-                .replace("cos(", "cos(")
-                .replace("tan(", "tan(")
-                .replace("asin(", "sin⁻¹(")
-                .replace("acos(", "cos⁻¹(")
-                .replace("atan(", "tan⁻¹(")
-                .replace("sinh(", "sinh(")
-                .replace("cosh(", "cosh(")
-                .replace("tanh(", "tanh(")
-                .replace("asinh(", "sinh⁻¹(")
-                .replace("acosh(", "cosh⁻¹(")
-                .replace("atanh(", "tanh⁻¹(")
-                .replace("ln(", "ln(")
-                .replace("log(", "log(")
-                .replace("exp(", "eˣ(")
-                .replace("abs(", "|(")
-                .replace("pi", "π")
-                .replace("e", "e")
-                .replace("^2", "²")
-                .replace("^3", "³")
+            get() {
+                val formatter = DecimalFormat("#,###.##########")
+                val parts = expression.split(Regex("(?<=[^0-9.])|(?=[^0-9.])"))
+
+                val formattedParts = parts.map { part ->
+                    // Check if the part is a number and format it
+                    if (part.endsWith('.') && part.dropLast(1).toDoubleOrNull() != null) {
+                        val numberPart = part.dropLast(1)
+                        formatter.format(numberPart.toDouble()) + "."
+                    } else {
+                        part.toDoubleOrNull()?.let {
+                            formatter.format(it)
+                        } ?: part // Otherwise, return the part as is (operator, function name, etc.)
+                    }
+                }
+
+                return formattedParts.joinToString("")
+                    .replace("/", "÷")
+                    .replace("*", "×")
+                    .replace("sqrt(", "√(")
+                    .replace("cbrt(", "³√(")
+                    .replace("sin(", "sin(")
+                    .replace("cos(", "cos(")
+                    .replace("tan(", "tan(")
+                    .replace("asin(", "sin⁻¹(")
+                    .replace("acos(", "cos⁻¹(")
+                    .replace("atan(", "tan⁻¹(")
+                    .replace("sinh(", "sinh(")
+                    .replace("cosh(", "cosh(")
+                    .replace("tanh(", "tanh(")
+                    .replace("asinh(", "sinh⁻¹(")
+                    .replace("acosh(", "cosh⁻¹(")
+                    .replace("atanh(", "tanh⁻¹(")
+                    .replace("ln(", "ln(")
+                    .replace("log(", "log(")
+                    .replace("exp(", "eˣ(")
+                    .replace("abs(", "|(")
+                    .replace("pi", "π")
+                    .replace("e", "e")
+                    .replace("^2", "²")
+                    .replace("^3", "³")
+            }
     }
 
     private val _uiState = MutableStateFlow(UiState())
@@ -212,7 +229,13 @@ class CalculatorViewModel : ViewModel() {
                 )
             }
 
-            setState { copy(expression = resultStr, result = "") }
+            val resultForExpression = if (value.isFinite() && value == value.toLong().toDouble()) {
+                value.toLong().toString()
+            } else {
+                value.toString()
+            }
+
+            setState { copy(expression = resultForExpression, result = "") }
             isResultDisplayed = true
         } catch (_: Throwable) {
             // ignore on equals if invalid
